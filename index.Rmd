@@ -1,0 +1,15 @@
+---
+title: "Kiera Matiska"
+image: "matiska.jpeg"
+links:
+  - label: LinkedIn
+    url: "https://www.linkedin.com/in/kiera-matiska-648804168/"
+  - label: GitHub
+    url: "https://github.com/kieramatiska"
+  - label: Email
+    url: "kmatiska@bren.ucsb.edu"
+output:
+  postcards::trestles
+site: distill::distill_website
+---
+ 
