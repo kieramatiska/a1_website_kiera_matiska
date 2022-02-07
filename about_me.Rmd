@@ -1,0 +1,9 @@
+---
+title: "About Me"
+output: 
+  postcards::jolla
+site: distill::distill_website
+---
+Since I was a young child, I have adored the environment. Going on hikes with my family and playing outside with other children inspired my interest in working in the environment. In high school, I realized how humans are impacting the environment and knew that I wanted to do something to conserve it. At the University of Michigan, I found my home in the Environmental Science department. Throughout my four years there, I discovered interests in natural resource management, wildlife trade, and clean energy. At Bren, I have been able to continue learning more about my interests and have even gained interest in other areas of environmental science, including environmental film making and data science, and this program has given me the skills necessary to build upon my new interests.
+
+Since I started the program, I have worked on multiple projects, both independently and with others. Currently, I am designing a shiny app with a partner about food deserts in the United States. Feel free to check it out. I have also built this website throughout the duration of my advanced data analysis course. I have also completed multiple statistical analysis projects independently and you can see them on this website.
