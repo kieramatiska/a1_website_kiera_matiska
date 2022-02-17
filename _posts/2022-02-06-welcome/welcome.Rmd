@@ -72,8 +72,8 @@ ggplot(data = hares_traps, # identifies data set
   labs(x = "Year", # titles x-axis
        y = "Number of Traps") + # titles y-axis
   theme(plot.background = element_rect(fill = "lavender"), # changes the plot background color
-        panel.background = element_rect(fill = "gray94"), # changes the panel background color
-        panel.grid.major = element_line(color = "snow3")) # change color of lines on the panel
+        panel.background = element_rect(fill = "white"), # changes the panel background color
+        panel.grid.major = element_line(color = "gray85")) # change color of lines on the panel
 ```
 
 **Figure 1.** Annual Counts of Juvenile Hare Traps in Bonanza Creek. Sample size is `r sum(hares_traps$number[1:12])` traps.
@@ -133,8 +133,8 @@ ggplot(data = hare_weights, # identifies data set
        y = "Weight (g)") + # y-axis label
   theme(legend.position = "none", # removes legend
         plot.background = element_rect(fill = "lavender"), # changes the plot background color
-        panel.background = element_rect(fill = "gray94"), # changes the panel background color
-        panel.grid.major = element_line(color = "snow3")) # change color of lines on the panel
+        panel.background = element_rect(fill = "white"), # changes the panel background color
+        panel.grid.major = element_line(color = "gray85")) # change color of lines on the panel
 ```
 
 **Figure 2.** Juvenile Hare Weights (g) by Sex in Each Bonanza Creek Site Zone. The first site ('Bonanza Lowland Spruce') is the site used for monitoring abundance and survival of snowshoe hares via live-trapping them. The second site ('Bonanza Mature') consists of mature white spruce, alder, paper birch, and black spruce trees. The last site ('Bonanza Riparian') is the flood zone area of the creek nearby the Tanana River and the Bonanza Mature Black Spruce. The sample sizes of each of the three sites respectively are: `r hare_weights_size2$sample_size[1]` hares,  `r hare_weights_size2$sample_size[2]` hares, and `r hare_weights_size2$sample_size[3]` hares.
@@ -229,8 +229,8 @@ ggplot(data = weight_hind, # select this data
        y = "Hind Foot Length (mm)") + # y-axis label
   theme(plot.caption = element_text(hjust = 0), # positions figure label to the bottom left of the graph
         plot.background = element_rect(fill = "lavender"), # changes the plot background color
-        panel.background = element_rect(fill = "gray94"), # changes the panel background color
-        panel.grid.major = element_line(color = "snow3")) # change color of lines on the panel
+        panel.background = element_rect(fill = "white"), # changes the panel background color
+        panel.grid.major = element_line(color = "gray85")) # change color of lines on the panel
 ```
 
 **Figure 3.** Weight versus Hind Foot Length of Juvenile Hares. Weight is in grams and hind foot length is in millimeters. Sample size is 378 individuals.
