@@ -15,4 +15,4 @@ output:
 site: distill::distill_website
 ---
  
-I am a first year master's student at the Bren School of Environmental Science and Management at the University of California - Santa Barbara. I am specializing in Conservation Planning and Energy and Climate with strong interests around species and natural resource conservation and clean energy solutions. I am from Michigan and moved to California with the goal of furthering my education to one day work on solutions to the illegal wildlife trade.
+I am a first year master's student at the Bren School of Environmental Science & Management at the University of California - Santa Barbara, specializing in Conservation Planning and Energy and Climate. I have strong interests around species and natural resource conservation and clean energy solutions. I plan to focus on how social factors impact conservation measures surrounding species and energy management.
