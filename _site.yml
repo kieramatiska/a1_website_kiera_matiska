@@ -11,6 +11,4 @@ navbar:
       href: about_me.html
     - text: "Portfolio"
       href: blog.html
-    - text: "About"
-      href: about.html
 output: distill::distill_article

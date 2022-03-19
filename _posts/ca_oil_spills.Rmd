@@ -1,0 +1,88 @@
+---
+title: "California Oil Spills Spatial Data Analysis"
+description: |
+  My Spatial Data Visualization Skills on Display
+author:
+  - name: Kiera Matiska
+date: 2022-03-17
+output:
+  distill::distill_article:
+    self_contained: false
+---
+
+# Overview
+
+This code will provide information on oil spills and their location throughout California State. A t-map will be produced as an interactive mode of exploring the data and a second static choropleth graph will be used to show a larger picture of the data within each county.
+
+### Citation
+
+California Department of Fish and Game & Office of Spill Prevention and Response. (20089, July 23). *Oil Spill Incident Tracking.* Digital map and vector digital data. https://map.dfg.ca.gov/metadata/ds0394.html#ID0EUGA 
+
+```{r setup, include=TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+# attach packages
+library(tidyverse)
+library(here)
+library(maptools)
+library(sf)
+library(tmap)
+library(tmaptools)
+library(janitor)
+```
+
+## California Oil Spill Maps {.tabset .tabset-fade}
+
+### T-map
+
+```{r}
+oil_spills_sf <- read_sf(here("data/ds394/ds394.shp")) %>% # read in shape file
+  clean_names() %>% 
+  st_transform(3310) # transform coordinate system
+
+ca_counties <- read_sf(here("data/CA_Counties/CA_Counties_TIGER2016.shp")) %>% # read in shape file
+  clean_names() %>% 
+  st_transform(3310) # transform coordinate system
+
+tmap_mode(mode = "view") # interactive t-map option
+tmap_options(check.and.fix = TRUE,
+             max.categories = 58)
+
+tm_shape(ca_counties) + # start by using CA counties
+  tm_fill("aland", # fill by land area
+          palette = "BuGn", 
+          popup.vars = c("County:" = "namelsad")) + # add a popup variable
+  tm_borders(col = "black") + # add borders around the counties
+tm_shape(oil_spills_sf) + # add another layer
+  tm_dots(popup.vars = c("Control Number:" = "oesnumber", # add more popup variables
+                         "Date:" = "dateofinci", 
+                         "Time:" = "timeofinci", 
+                         "County:" = "localecoun", 
+                         "City:" = "localecity", 
+                         "Type of Water:" = "specificlo",
+                         "Inland or Marine:" = "inlandmari"),
+          size = 0.02) # change size of points
+```
+
+**Figure 1.** Interactive Map Showing Locations of Oil Spills within California State. For each oil spill location, the user may click on the point to receive more information including the data, time, and location.
+
+### Choropleth Map
+
+```{r}
+ca_oil <- ca_counties %>% 
+  st_join(oil_spills_sf) %>% # join the two data sets together
+  select(latitude, longitude, namelsad) %>% 
+  group_by(namelsad) %>% # group by name of county
+  summarize(oil_spills = n()) # count the number of oil spills in each county
+
+ggplot(data = ca_oil) + 
+  geom_sf(aes(fill = oil_spills)) + # define sf plot and color by oil_spill count
+  scale_fill_gradient(low = "steelblue1", high = "dodgerblue4") + # change colors
+  labs(title = "Choropleth Map of Oil Spills by \nCounty in California State", # add title
+       x = "Longitude", # add x-axis label
+       y = "Latitude", # add y-axis label
+       fill = "Oil Spill Number") + # change gradient legend name
+  theme(plot.title = element_text(hjust = 0.5)) # center title
+```
+
+**Figure 2.** Choropleth Map of Oil Spills by County in California State. The colors indicate the number of oil spills that have occurred in each county.
