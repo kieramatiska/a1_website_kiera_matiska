@@ -1,0 +1,12 @@
+{
+  "articles": [
+    {
+      "path": "resume.html",
+      "title": "Resume",
+      "author": [],
+      "contents": "\nHere is a link to my resume.\n\n\n\n",
+      "last_modified": "2022-03-19T14:45:56-07:00"
+    }
+  ],
+  "collections": ["posts/posts.json"]
+}
