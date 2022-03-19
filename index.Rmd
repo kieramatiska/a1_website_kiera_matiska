@@ -6,8 +6,6 @@ links:
     url: "https://www.linkedin.com/in/kiera-matiska-648804168/"
   - label: GitHub
     url: "https://github.com/kieramatiska"
-  - label: Email
-    url: "kmatiska@bren.ucsb.edu"
   - label: Resume
     url: "file:///Users/kieramatiska/Desktop/Bren/Career/Matiska_Resume.pdf"
 output:

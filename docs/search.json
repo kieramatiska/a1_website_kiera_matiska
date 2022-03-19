@@ -1,11 +1,40 @@
 {
   "articles": [
     {
+      "path": "about_me.html",
+      "title": "About Me",
+      "author": [],
+      "contents": "\nUniversity of Michigan GraduationI spent a majority of my life in Michigan. Growing up, I used to find myself out in nature exploring. While I was in high school, I realized how humans are impacting the environment and knew that I wanted to do something to conserve it. During my undergraduate career at the University of Michigan, I found my home in the Environmental Science department. During my time there, I discovered interests in natural resource management, wildlife trade, and clean energy. Since arriving at Bren, I have been able to explore my interests more, as well as gain new skills involving environmental data science and environmental film making.\nEducation and Career Interests\nIn 2021, I graduated from the University of Michigan with a Bachelor of Science in Environmental Science and a minor in Environmental Geology. At the university, I had many opportunities to expand my skill sets and learn more about my interests through classes and field work. Additionally, I partook in two research projects during my tenure at the university. The first research assignment I completed looked at how anthropogenic factors impact wetlands in urban versus rural areas. The other was in partner with the U.S. Geological Survey, where I worked alongside two fisheries scientists to determine the feasibility of creating two different bioenergetic models for Lake Trout (Salvelinus namaycush) - one model for each sex.\nAlso in 2021, I was accepted to the Bren School of Environmental Science & Management. My goal for attending is to further my education in the conservation field. My goal is to work for conservation of large megafauna, their habitats, and how that conservation impacts local communities. I am particularly interested in the bushmeat crisis in Africa and the illegal wildlife trade internationally and am interested in implementing policy and working with local people to decrease the damage potential of these two issues.\nHobbies\nIn my free time, I enjoy spending time with my family, friends, and pets. Additionally, I enjoy environmental photography, and have been learning how to take decent photos.\nTop (from left): My sister, Sydney, and Me. Bottom (from left): My sister, Riley, and my brother, Hayden.Nichol’s Arboretum in Ann Arbor, MI. Credit: Kiera Matiska\n\n\n",
+      "last_modified": "2022-03-19T15:13:16-07:00"
+    },
+    {
+      "path": "about.html",
+      "title": "About this site",
+      "description": "Some additional details about the website",
+      "author": [],
+      "contents": "\n\n\n\n",
+      "last_modified": "2022-03-19T15:13:17-07:00"
+    },
+    {
+      "path": "blog.html",
+      "title": "Blog",
+      "author": [],
+      "contents": "\n\n\n\n",
+      "last_modified": "2022-03-19T15:13:19-07:00"
+    },
+    {
+      "path": "index.html",
+      "title": "Kiera Matiska",
+      "author": [],
+      "contents": "\n\n          \n          \n          Kiera Matiska\n          \n          \n          Home\n          About Me\n          Portfolio\n          Resume\n          ☰\n          \n          \n      \n        \n          \n            \n              \n            \n              Kiera Matiska\n            \n            \n              \n                \n                    \n                      \n                        LinkedIn\n                      \n                    \n                  \n                                    \n                    \n                      \n                        GitHub\n                      \n                    \n                  \n                                    \n                    \n                      \n                        Resume\n                      \n                    \n                  \n                                  \n            \n          \n        \n        \n        \n          \n            I am a first year master’s student at the Bren School of Environmental Science & Management at the University of California - Santa Barbara, specializing in Conservation Planning and Energy and Climate. I have strong interests around species and natural resource conservation, especially in terms of bushmeat, and energy conservation. I plan to focus on how social factors impact conservation measures surrounding species and energy management.\n          \n        \n      \n    \n\n    \n      \n        \n          \n            \n              \n            \n              Kiera Matiska\n            \n            \n              \n                \n                                    \n                    \n                      LinkedIn\n                    \n                  \n                                    \n                    \n                      GitHub\n                    \n                  \n                                    \n                    \n                      Resume\n                    \n                  \n                                  \n              \n            \n            \n              I am a first year master’s student at the Bren School of Environmental Science & Management at the University of California - Santa Barbara, specializing in Conservation Planning and Energy and Climate. I have strong interests around species and natural resource conservation, especially in terms of bushmeat, and energy conservation. I plan to focus on how social factors impact conservation measures surrounding species and energy management.\n            \n        \n      \n    \n\n    \n    \n    ",
+      "last_modified": "2022-03-19T15:13:19-07:00"
+    },
+    {
       "path": "resume.html",
       "title": "Resume",
       "author": [],
       "contents": "\nHere is a link to my resume.\n\n\n\n",
-      "last_modified": "2022-03-19T14:45:56-07:00"
+      "last_modified": "2022-03-19T15:13:20-07:00"
     }
   ],
   "collections": ["posts/posts.json"]
