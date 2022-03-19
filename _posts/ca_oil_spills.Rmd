@@ -1,7 +1,7 @@
 ---
 title: "California Oil Spills Spatial Data Analysis"
 description: |
-  My Spatial Data Visualization Skills on Display
+  My Spatial Visualization Skills on Display
 author:
   - name: Kiera Matiska
 date: 2022-03-17
@@ -18,6 +18,7 @@ This code will provide information on oil spills and their location throughout C
 
 California Department of Fish and Game & Office of Spill Prevention and Response. (20089, July 23). *Oil Spill Incident Tracking.* Digital map and vector digital data. https://map.dfg.ca.gov/metadata/ds0394.html#ID0EUGA 
 
+## Set-Up
 ```{r setup, include=TRUE, message = FALSE, warning = FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
@@ -31,7 +32,7 @@ library(tmaptools)
 library(janitor)
 ```
 
-## California Oil Spill Maps {.tabset .tabset-fade}
+## California Oil Spill Maps
 
 ### T-map
 
