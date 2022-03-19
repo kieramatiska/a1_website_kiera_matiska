@@ -1,10 +1,9 @@
 ---
 title: "About Me"
 output: 
-  postcards::jolla
 site: distill::distill_website
 ---
-![University of Michigan Graduation](matiska3.jpeg)
+<p align = "right" > ![University of Michigan Graduation](matiska3.jpeg) </p>
 
 I spent a majority of my life in Michigan. Growing up, I used to find myself out in nature exploring. While I was in high school, I realized how humans are impacting the environment and knew that I wanted to do something to conserve it. During my undergraduate career at the University of Michigan, I found my home in the Environmental Science department. During my time there, I discovered interests in natural resource management, wildlife trade, and clean energy. Since arriving at Bren, I have been able to explore my interests more, as well as gain new skills involving environmental data science and environmental film making.
 
@@ -16,9 +15,8 @@ In 2021, I was accepted to the Bren School of Environmental Science & Management
 
 **Hobbies**
 
-In my free time, I enjoy spending time with my family, friends, and pets. Additionally, I enjoy environmental photography.
+In my free time, I enjoy spending time with my family, friends, and pets. Additionally, I enjoy environmental photography, and have been learning how to take decent photos.
 
-![Top (from left): My sister, Sydney, and Me. Bottom (from left): My sister, Riley, and my brother, Hayden.](siblings.JPG)
+![Top (from left): My sister, Sydney, and Me. Bottom (from left): My sister, Riley, and my brother, Hayden.](siblings.png)
 
-![Nichols Arboretum, Ann Arbor, MI](arb.jpeg)
-
+![Nichol's Arboretum in Ann Arbor, MI. Credit: Kiera Matiska](arb.jpeg)
