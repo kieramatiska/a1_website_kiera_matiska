@@ -1,0 +1,213 @@
+---
+title: "Text Analysis of the Musical: Hamilton"
+description: |
+  My Text Analysis Skills on Display.
+author:
+  - name: Kiera Matiska
+date: 2022-03-15
+output:
+  distill::distill_article:
+    self_contained: false
+---
+
+# Introduction
+
+On July 13, 2015, the musical *Hamilton*, written by Lin-Manuel Miranda, premiered at the Richard Rogers Theater on Broadway. It received critical acclaim and the musical was nominated 16 times for Tony award categories and won in 11 categories. The musical was also awarded the 2016 Pulitzer Prize for Drama. It instantly became a smashing hit, with people all around the globe not only listening to the music, but striving to see it in person. 
+
+The musical tells the story of the Founding Father Alexander Hamilton, with the music heavy on hip-hop, R&B, rap, and soul. It is split into two acts that explore his life before becoming a major political figure and after. The musical encounters other important historical characters, such as George Washington, Thomas Jefferson, and Aaron Burr. 
+
+Here is the original broadway cast:
+
+- Alexander Hamilton: Lin-Manuel Miranda
+- Aaron Burr: Leslie Odom Jr.
+- Eliza Hamilton: Phillipa Soo
+- Angelica Schuyler: Renée Elise Goldsberry
+- Marquis de Lafayette & Thomas Jefferson: Daveed Diggs
+- George Washington: Christopher Jackson
+- John Laurens & Philip Hamilton: Anthony Ramos
+- Hercules Mulligan & James Madison: Okieriete Onaodowan
+- King George III: Johnathon Groff
+- Peggy Schuyler & Maria Reynolds: Jasmine Cephas Jones
+
+This code will provide a text analysis on the lyrics of each song between the two acts. Word counts will be assessed, the top 5 most frequently used words per song will be graphed. Additionally, two word clouds will be generated based on the most frequent 100 words in each act. Finally, a sentiment analysis will be ran, comparing the attitudes and opinions expressed throughout each song between the two acts.
+
+## Set Up
+
+```{r setup, include=TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+# attach packages
+library(tidyverse)
+library(here)
+library(tidytext)
+library(textdata)
+library(pdftools)
+library(ggwordcloud)
+library(paletteer)
+```
+
+## Wrangle Data
+
+```{r, cache = TRUE}
+## read in lyrics for act 1 and 2
+ham_act1 <- pdf_text(here("data", "hamilton_act1.pdf")) # read in act 1 lyrics
+
+ham_act2 <- pdf_text(here("data", "hamilton_act2.pdf")) # read in act 2 lyrics
+
+## convert text to a data frame
+act1_lines <- data.frame(ham_act1) %>% # create a data frame using act 1 lyrics
+  mutate(page = 1:n()) %>% # define all pages in the text
+  mutate(text_act1 = str_split(ham_act1, pattern = "\\n")) %>% # create a new row 
+                                                               # with every new line
+  unnest(text_act1) %>% 
+  mutate(text_act1 = str_trim(text_act1))
+
+act2_lines <- data.frame(ham_act2) %>% # create a data frame using act 2 lyrics
+  mutate(page = 1:n()) %>% # define all pages in the text
+  mutate(text_act2 = str_split(ham_act2, pattern = "\\n")) %>% # create a new row 
+                                                               # with every new line
+  unnest(text_act2) %>% 
+  mutate(text_act2 = str_trim(text_act2))
+
+## do some tidying
+tunes_act1 <- act1_lines %>% # create a tunes data frame
+  mutate(song = ifelse(str_detect(text_act1, "Song"), text_act1, NA)) %>% # create a song column
+  fill(song, .direction = "down") %>% # fill down to create rows
+  separate(col = song, into = c("so", "no"), sep = " ") %>% # create new columns with song 
+                                                            # in one and number in the other
+  mutate(song = as.numeric(as.roman(no))) # number column as roman numeral
+
+tunes_act2 <- act2_lines %>% # create a tunes data frame
+  mutate(song = ifelse(str_detect(text_act2, "Song"), text_act2, NA)) %>% # create a song column
+  fill(song, .direction = "down") %>% # fill down to create rows
+  separate(col = song, into = c("so", "no"), sep = " ") %>% # create new columns with song 
+                                                            # in one and number in the other
+  mutate(song = as.numeric(as.roman(no))) # number column as roman numeral
+```
+
+## Find Word Counts and Remove Stop Words
+
+```{r}
+# unnest the words in each column of the act 1 text
+words_act1 <- tunes_act1 %>% 
+  unnest_tokens(word, text_act1) %>% 
+  select(-ham_act1)
+
+# unnest the words in each column of the act 2 text
+words_act2 <- tunes_act2 %>% 
+  unnest_tokens(word, text_act2) %>% 
+  select(-ham_act2)
+
+# find word count of act 1 separated by song
+act1_wordcount <- words_act1 %>% 
+  count(song, word)
+
+# find word count of act 2 separated by song
+act2_wordcount <- words_act2 %>% 
+  count(song, word)
+
+# Remove stop words in act 1
+words_act1_clean <- words_act1 %>% 
+  anti_join(stop_words, by = "word") %>% 
+  mutate(song_name = case_when( # rename songs in act 1
+    song == "1" ~ "Alexander Hamilton",
+    song == "2" ~ "Aaron Burr, Sir",
+    song == "3" ~ "My Shot",
+    song == "4" ~ "The Story of Tonight",
+    song == "5" ~ "The Schuyler Sisters",
+    song == "6" ~ "Farmer Refuted",
+    song == "7" ~ "You'll Be Back",
+    song == "8" ~ "Right Hand Man",
+    song == "9" ~ "A Winter's Ball",
+    song == "10" ~ "Helpless",
+    song == "11" ~ "Satisfied",
+    song == "12" ~ "The Story of \nTonight (Reprise)",
+    song == "13" ~ "Wait for It",
+    song == "14" ~ "Stay Alive",
+    song == "15" ~ "Ten Duel Commandments",
+    song == "16" ~ "Meet Me Inside",
+    song == "17" ~ "That Would Be Enough",
+    song == "18" ~ "Guns and Ships",
+    song == "19" ~ "History Has Its Eyes on You",
+    song == "20" ~ "Yorktown (The World \nTurned Upside Down)",
+    song == "21" ~ "What Comes Next?",
+    song == "22" ~ "Dear Theodosia",
+    song == "23" ~ "Non-Stop"
+  ))
+
+# remove stop words in act 2
+words_act2_clean <- words_act2 %>% 
+  anti_join(stop_words, by = "word") %>% 
+  mutate(song_name = case_when( # rename songs in act 2
+    song == "1" ~ "What'd I Miss",
+    song == "2" ~ "Cabinet Battle #1",
+    song == "3" ~ "Take a Break",
+    song == "4" ~ "Say No to This",
+    song == "5" ~ "The Room Where It Happens",
+    song == "6" ~ "Schuyler Defeated",
+    song == "7" ~ "Cabinet Battle #2",
+    song == "8" ~ "Washington on Your Side",
+    song == "9" ~ "One Last Time",
+    song == "10" ~ "I Know Him",
+    song == "11" ~ "The Adams Administration",
+    song == "12" ~ "We Know", 
+    song == "13" ~ "Hurricane", 
+    song == "14" ~ "The Reynolds Pamphlet", 
+    song == "15" ~ "Burn",
+    song == "16" ~ "Blow Us All Away", 
+    song == "17" ~ "Stay Alive - Reprise", 
+    song == "18" ~ "It's Quiet Uptown", 
+    song == "19" ~ "The Election of 1800", 
+    song == "20" ~ "Your Obedient Servant", 
+    song == "21" ~ "Best of Wives and \nBest of Women", 
+    song == "22" ~ "The World Was Wide Enough",
+    song == "23" ~ "Who Lives, Who Dies, \nWho Tells Your Story"
+  ))
+
+# find word counts without stop words in act 1
+act1_nonstop_counts <- words_act1_clean %>% 
+  count(song, song_name, word)
+
+# find word counts without stop words in act 2
+act2_nonstop_counts <- words_act2_clean %>% 
+  count(song, song_name, word)
+```
+
+## Find top 5 words from each song in each Act {.tabset .tabset-fade}
+
+```{r}
+# top 5 words in act 1
+act1_top5_words <- act1_nonstop_counts %>%
+  group_by(song) %>%
+  arrange(-n) %>% # arrange by decreasing number
+  slice(1:5) %>% # choose top 5 words in each song
+  ungroup() # stop grouping by song
+
+# top 5 words in act 2
+act2_top5_words <- act2_nonstop_counts %>%
+  group_by(song) %>%
+  arrange(-n) %>% # arrange by decreasing number
+  slice(1:5) %>% # choose top 5 words in each song
+  ungroup() # stop grouping by song
+```
+
+### Act 1
+
+#### Songs 1-6
+
+```{r}
+# graph the top 5 words in song 1-6
+act1_1_6 <- act1_top5_words %>% 
+  filter(song %in% c("1", "2", "3", "4", "5", "6")) # filter for songs 1-6
+
+ggplot(data = act1_1_6, # specify data
+       aes(x = n, y = fct_reorder(word, n))) + # define parameters
+  geom_col(fill = "#f6c049", color = "#a8a7a7") + # define column graph and change colors
+  facet_wrap(~song_name, scales = "free") + #separate by song
+  labs(title = "Top 5 Words in Songs 1-6 in Hamilton: Act 1", # add title
+       x = "Count", # add x-axis label
+       y = "Word") + # add y-axis label
+  theme(plot.title = element_text(hjust = 0.5), # center title
+        panel.background = element_rect(color = "#404040"), # outline panel
+        plot.background = element_rect(fill = "snow")) # color plot background
+```
