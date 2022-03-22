@@ -6,11 +6,13 @@ links:
     url: "https://www.linkedin.com/in/kiera-matiska-648804168/"
   - label: GitHub
     url: "https://github.com/kieramatiska"
-  - label: Resume
-    url: "file:///Users/kieramatiska/Desktop/Bren/Career/Matiska_Resume.pdf"
 output:
   postcards::trestles
 site: distill::distill_website
 ---
  
 I am a first year master's student at the Bren School of Environmental Science & Management at the University of California - Santa Barbara, specializing in Conservation Planning and Energy and Climate. I have strong interests around species and natural resource conservation, especially in terms of bushmeat, and energy conservation. I plan to focus on how social factors impact conservation measures surrounding species and energy management.
+
+Here is a <a href = 'Matiska_Resume.pdf' target = '_blank'>link</a> to my resume.
+
+Email: kmatiska@bren.ucsb.edu
