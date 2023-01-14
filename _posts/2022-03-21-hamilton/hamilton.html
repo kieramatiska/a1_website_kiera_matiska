@@ -50,16 +50,17 @@ pre.numberSource code > span > a:first-child::before
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-  {   }
+  { color: #00769e; background-color: #f1f3f5; }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
+code span { color: #00769e; } /* Normal */
 code span.al { color: #ad0000; } /* Alert */
 code span.an { color: #5e5e5e; } /* Annotation */
-code span.at { } /* Attribute */
+code span.at { color: #657422; } /* Attribute */
 code span.bn { color: #ad0000; } /* BaseN */
 code span.bu { } /* BuiltIn */
-code span.cf { color: #007ba5; } /* ControlFlow */
+code span.cf { color: #00769e; } /* ControlFlow */
 code span.ch { color: #20794d; } /* Char */
 code span.cn { color: #8f5902; } /* Constant */
 code span.co { color: #5e5e5e; } /* Comment */
@@ -73,9 +74,9 @@ code span.fl { color: #ad0000; } /* Float */
 code span.fu { color: #4758ab; } /* Function */
 code span.im { } /* Import */
 code span.in { color: #5e5e5e; } /* Information */
-code span.kw { color: #007ba5; } /* Keyword */
+code span.kw { color: #00769e; } /* Keyword */
 code span.op { color: #5e5e5e; } /* Operator */
-code span.ot { color: #007ba5; } /* Other */
+code span.ot { color: #00769e; } /* Other */
 code span.pp { color: #ad0000; } /* Preprocessor */
 code span.sc { color: #5e5e5e; } /* SpecialChar */
 code span.ss { color: #20794d; } /* SpecialString */
@@ -117,7 +118,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--/radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-resource-manifest">
-  {"type":"character","attributes":{},"value":["hamilton_files/figure-html5/unnamed-chunk-4-1.png"]}
+  {"type":"character","attributes":{},"value":["hamilton_files/anchor-4.2.2/anchor.min.js","hamilton_files/bowser-1.9.3/bowser.min.js","hamilton_files/distill-2.2.21/template.v2.js","hamilton_files/figure-html5/unnamed-chunk-10-1.png","hamilton_files/figure-html5/unnamed-chunk-11-1.png","hamilton_files/figure-html5/unnamed-chunk-13-1.png","hamilton_files/figure-html5/unnamed-chunk-14-1.png","hamilton_files/figure-html5/unnamed-chunk-15-1.png","hamilton_files/figure-html5/unnamed-chunk-16-1.png","hamilton_files/figure-html5/unnamed-chunk-18-1.png","hamilton_files/figure-html5/unnamed-chunk-19-1.png","hamilton_files/figure-html5/unnamed-chunk-20-1.png","hamilton_files/figure-html5/unnamed-chunk-21-1.png","hamilton_files/figure-html5/unnamed-chunk-23-1.png","hamilton_files/figure-html5/unnamed-chunk-24-1.png","hamilton_files/figure-html5/unnamed-chunk-25-1.png","hamilton_files/figure-html5/unnamed-chunk-26-1.png","hamilton_files/figure-html5/unnamed-chunk-4-1.png","hamilton_files/figure-html5/unnamed-chunk-5-1.png","hamilton_files/figure-html5/unnamed-chunk-6-1.png","hamilton_files/figure-html5/unnamed-chunk-7-1.png","hamilton_files/figure-html5/unnamed-chunk-8-1.png","hamilton_files/figure-html5/unnamed-chunk-9-1.png","hamilton_files/header-attrs-2.11/header-attrs.js","hamilton_files/jquery-3.6.0/jquery-3.6.0.js","hamilton_files/jquery-3.6.0/jquery-3.6.0.min.js","hamilton_files/jquery-3.6.0/jquery-3.6.0.min.map","hamilton_files/popper-2.6.0/popper.min.js","hamilton_files/tippy-6.2.7/tippy-bundle.umd.min.js","hamilton_files/tippy-6.2.7/tippy-light-border.css","hamilton_files/tippy-6.2.7/tippy.css","hamilton_files/tippy-6.2.7/tippy.umd.min.js","hamilton_files/webcomponents-2.0.0/webcomponents.js"]}
   </script>
   <!--radix_placeholder_navigation_in_header-->
   <!--/radix_placeholder_navigation_in_header-->
@@ -188,6 +189,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   d-article table.gt_table td,
   d-article table.gt_table th {
     border-bottom: none;
+    font-size: 100%;
   }
 
   .html-widget {
@@ -429,10 +431,6 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
     position: relative;
     margin-bottom: 2.5em;
     margin-top: 1.5em;
-  }
-
-  .figure img {
-    width: 100%;
   }
 
   .figure .caption {
@@ -1264,9 +1262,21 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 
       // hoverable references
       $('span.citation[data-cites]').each(function() {
+        const citeChild = $(this).children()[0]
+        // Do not process if @xyz has been used without escaping and without bibliography activated
+        // https://github.com/rstudio/distill/issues/466
+        if (citeChild === undefined) return true
+
+        if (citeChild.nodeName == "D-FOOTNOTE") {
+          var fn = citeChild
+          $(this).html(fn.shadowRoot.querySelector("sup"))
+          $(this).id = fn.id
+          fn.remove()
+        }
         var refs = $(this).attr('data-cites').split(" ");
         var refHtml = refs.map(function(ref) {
-          return "<p>" + $('#ref-' + ref).html() + "</p>";
+          // Could use CSS.escape too here, we insure backward compatibility in navigator
+          return "<p>" + $('div[id="ref-' + ref + '"]').html() + "</p>";
         }).join("\n");
         window.tippy(this, {
           allowHTML: true,
@@ -1278,6 +1288,31 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
           placement: 'bottom-start'
         });
       });
+
+      // fix footnotes in tables (#411)
+      // replacing broken distill.pub feature
+      $('table d-footnote').each(function() {
+        // we replace internal showAtNode methode which is triggered when hovering a footnote
+        this.hoverBox.showAtNode = function(node) {
+          // ported from https://github.com/distillpub/template/pull/105/files
+          calcOffset = function(elem) {
+              let x = elem.offsetLeft;
+              let y = elem.offsetTop;
+              // Traverse upwards until an `absolute` element is found or `elem`
+              // becomes null.
+              while (elem = elem.offsetParent && elem.style.position != 'absolute') {
+                  x += elem.offsetLeft;
+                  y += elem.offsetTop;
+              }
+
+              return { left: x, top: y };
+          }
+          // https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetTop
+          const bbox = node.getBoundingClientRect();
+          const offset = calcOffset(node);
+          this.show([offset.left + bbox.width, offset.top + bbox.height]);
+        }
+      })
 
       // clear polling timer
       clearInterval(tid);
@@ -1377,6 +1412,8 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
     // mark non-body figures created by knitr chunks as 100% width
     $('.layout-chunk').each(function(i, val) {
       var figures = $(this).find('img, .html-widget');
+      // ignore leaflet img layers (#106)
+      figures = figures.filter(':not(img[class*="leaflet"])')
       if ($(this).attr('data-layout') !== "l-body") {
         figures.css('width', '100%');
       } else {
@@ -1399,7 +1436,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
     // get rid of index.html references in header
     if (window.location.protocol !== "file:") {
       $('.distill-site-header a[href]').each(function(i,val) {
-        $(this).attr('href', $(this).attr('href').replace("index.html", "./"));
+        $(this).attr('href', $(this).attr('href').replace(/^index[.]html/, "./"));
       });
     }
 
@@ -1438,7 +1475,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   </script>
 
   <!--/radix_placeholder_distill-->
-  <script src="hamilton_files/header-attrs-2.11/header-attrs.js"></script>
+  <script src="hamilton_files/header-attrs-2.14/header-attrs.js"></script>
   <script src="hamilton_files/jquery-3.6.0/jquery-3.6.0.min.js"></script>
   <script src="hamilton_files/popper-2.6.0/popper.min.js"></script>
   <link href="hamilton_files/tippy-6.2.7/tippy.css" rel="stylesheet" />
@@ -1499,192 +1536,612 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 <li>Peggy Schuyler &amp; Maria Reynolds: Jasmine Cephas Jones</li>
 </ul>
 <p>This code will provide a text analysis on the lyrics of each song between the two acts. Word counts will be assessed, the top 5 most frequently used words per song will be graphed. Additionally, two word clouds will be generated based on the most frequent 100 words in each act. Finally, a sentiment analysis will be ran, comparing the attitudes and opinions expressed throughout each song between the two acts.</p>
-<h2 id="set-up">Set Up</h2>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='fu'>knitr</span><span class='fu'>::</span><span class='va'><a href='https://rdrr.io/pkg/knitr/man/opts_chunk.html'>opts_chunk</a></span><span class='op'>$</span><span class='fu'>set</span><span class='op'>(</span>echo <span class='op'>=</span> <span class='cn'>TRUE</span>, message <span class='op'>=</span> <span class='cn'>FALSE</span>, warning <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
-
-<span class='co'># attach packages</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://tidyverse.tidyverse.org'>tidyverse</a></span><span class='op'>)</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://here.r-lib.org/'>here</a></span><span class='op'>)</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/juliasilge/tidytext'>tidytext</a></span><span class='op'>)</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/EmilHvitfeldt/textdata'>textdata</a></span><span class='op'>)</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://docs.ropensci.org/pdftools/'>pdftools</a></span><span class='op'>)</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/lepennec/ggwordcloud'>ggwordcloud</a></span><span class='op'>)</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/EmilHvitfeldt/paletteer'>paletteer</a></span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'>knitr</span><span class='fu'>::</span><span class='va'><a href='https://rdrr.io/pkg/knitr/man/opts_chunk.html'>opts_chunk</a></span><span class='op'>$</span><span class='fu'>set</span><span class='op'>(</span>echo <span class='op'>=</span> <span class='cn'>TRUE</span>, message <span class='op'>=</span> <span class='cn'>FALSE</span>, warning <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># attach packages</span></span>
+<span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://tidyverse.tidyverse.org'>tidyverse</a></span><span class='op'>)</span></span>
+<span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://here.r-lib.org/'>here</a></span><span class='op'>)</span></span>
+<span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/juliasilge/tidytext'>tidytext</a></span><span class='op'>)</span></span>
+<span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/EmilHvitfeldt/textdata'>textdata</a></span><span class='op'>)</span></span>
+<span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://docs.ropensci.org/pdftools/'>pdftools</a></span><span class='op'>)</span></span>
+<span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/lepennec/ggwordcloud'>ggwordcloud</a></span><span class='op'>)</span></span>
+<span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://github.com/EmilHvitfeldt/paletteer'>paletteer</a></span><span class='op'>)</span></span></code></pre>
 </div>
 </div>
-<h2 id="wrangle-data">Wrangle Data</h2>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='co'>## read in lyrics for act 1 and 2</span>
-<span class='va'>ham_act1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://docs.ropensci.org/pdftools/reference/pdftools.html'>pdf_text</a></span><span class='op'>(</span><span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"data"</span>, <span class='st'>"hamilton_act1.pdf"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># read in act 1 lyrics</span>
-
-<span class='va'>ham_act2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://docs.ropensci.org/pdftools/reference/pdftools.html'>pdf_text</a></span><span class='op'>(</span><span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"data"</span>, <span class='st'>"hamilton_act2.pdf"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># read in act 2 lyrics</span>
-
-<span class='co'>## convert text to a data frame</span>
-<span class='va'>act1_lines</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span><span class='op'>(</span><span class='va'>ham_act1</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># create a data frame using act 1 lyrics</span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>page <span class='op'>=</span> <span class='fl'>1</span><span class='op'>:</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/context.html'>n</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># define all pages in the text</span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>text_act1 <span class='op'>=</span> <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_split.html'>str_split</a></span><span class='op'>(</span><span class='va'>ham_act1</span>, pattern <span class='op'>=</span> <span class='st'>"\\n"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># create a new row </span>
-                                                               <span class='co'># with every new line</span>
-  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/nest.html'>unnest</a></span><span class='op'>(</span><span class='va'>text_act1</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> 
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>text_act1 <span class='op'>=</span> <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_trim.html'>str_trim</a></span><span class='op'>(</span><span class='va'>text_act1</span><span class='op'>)</span><span class='op'>)</span>
-
-<span class='va'>act2_lines</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span><span class='op'>(</span><span class='va'>ham_act2</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># create a data frame using act 2 lyrics</span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>page <span class='op'>=</span> <span class='fl'>1</span><span class='op'>:</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/context.html'>n</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># define all pages in the text</span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>text_act2 <span class='op'>=</span> <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_split.html'>str_split</a></span><span class='op'>(</span><span class='va'>ham_act2</span>, pattern <span class='op'>=</span> <span class='st'>"\\n"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># create a new row </span>
-                                                               <span class='co'># with every new line</span>
-  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/nest.html'>unnest</a></span><span class='op'>(</span><span class='va'>text_act2</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> 
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>text_act2 <span class='op'>=</span> <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_trim.html'>str_trim</a></span><span class='op'>(</span><span class='va'>text_act2</span><span class='op'>)</span><span class='op'>)</span>
-
-<span class='co'>## do some tidying</span>
-<span class='va'>tunes_act1</span> <span class='op'>&lt;-</span> <span class='va'>act1_lines</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># create a tunes data frame</span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>song <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'><a href='https://stringr.tidyverse.org/reference/str_detect.html'>str_detect</a></span><span class='op'>(</span><span class='va'>text_act1</span>, <span class='st'>"Song"</span><span class='op'>)</span>, <span class='va'>text_act1</span>, <span class='cn'>NA</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># create a song column</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes_colour_fill_alpha.html'>fill</a></span><span class='op'>(</span><span class='va'>song</span>, .direction <span class='op'>=</span> <span class='st'>"down"</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># fill down to create rows</span>
-  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/separate.html'>separate</a></span><span class='op'>(</span>col <span class='op'>=</span> <span class='va'>song</span>, into <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"so"</span>, <span class='st'>"no"</span><span class='op'>)</span>, sep <span class='op'>=</span> <span class='st'>" "</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># create new columns with song </span>
-                                                            <span class='co'># in one and number in the other</span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>song <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/numeric.html'>as.numeric</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/utils/roman.html'>as.roman</a></span><span class='op'>(</span><span class='va'>no</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># number column as roman numeral</span>
-
-<span class='va'>tunes_act2</span> <span class='op'>&lt;-</span> <span class='va'>act2_lines</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># create a tunes data frame</span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>song <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'><a href='https://stringr.tidyverse.org/reference/str_detect.html'>str_detect</a></span><span class='op'>(</span><span class='va'>text_act2</span>, <span class='st'>"Song"</span><span class='op'>)</span>, <span class='va'>text_act2</span>, <span class='cn'>NA</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># create a song column</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes_colour_fill_alpha.html'>fill</a></span><span class='op'>(</span><span class='va'>song</span>, .direction <span class='op'>=</span> <span class='st'>"down"</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># fill down to create rows</span>
-  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/separate.html'>separate</a></span><span class='op'>(</span>col <span class='op'>=</span> <span class='va'>song</span>, into <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"so"</span>, <span class='st'>"no"</span><span class='op'>)</span>, sep <span class='op'>=</span> <span class='st'>" "</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># create new columns with song </span>
-                                                            <span class='co'># in one and number in the other</span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>song <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/numeric.html'>as.numeric</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/utils/roman.html'>as.roman</a></span><span class='op'>(</span><span class='va'>no</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># number column as roman numeral</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='co'>## read in lyrics for act 1 and 2</span></span>
+<span><span class='va'>ham_act1</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://docs.ropensci.org/pdftools/reference/pdftools.html'>pdf_text</a></span><span class='op'>(</span><span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"data"</span>, <span class='st'>"hamilton_act1.pdf"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># read in act 1 lyrics</span></span>
+<span></span>
+<span><span class='va'>ham_act2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://docs.ropensci.org/pdftools/reference/pdftools.html'>pdf_text</a></span><span class='op'>(</span><span class='fu'><a href='https://here.r-lib.org//reference/here.html'>here</a></span><span class='op'>(</span><span class='st'>"data"</span>, <span class='st'>"hamilton_act2.pdf"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># read in act 2 lyrics</span></span>
+<span></span>
+<span><span class='co'>## convert text to a data frame</span></span>
+<span><span class='va'>act1_lines</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span><span class='op'>(</span><span class='va'>ham_act1</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># create a data frame using act 1 lyrics</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>page <span class='op'>=</span> <span class='fl'>1</span><span class='op'>:</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/context.html'>n</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># define all pages in the text</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>text_act1 <span class='op'>=</span> <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_split.html'>str_split</a></span><span class='op'>(</span><span class='va'>ham_act1</span>, pattern <span class='op'>=</span> <span class='st'>"\\n"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># create a new row with every new line</span></span>
+<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/nest.html'>unnest</a></span><span class='op'>(</span><span class='va'>text_act1</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>text_act1 <span class='op'>=</span> <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_trim.html'>str_trim</a></span><span class='op'>(</span><span class='va'>text_act1</span><span class='op'>)</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='va'>act2_lines</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span><span class='op'>(</span><span class='va'>ham_act2</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># create a data frame using act 2 lyrics</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>page <span class='op'>=</span> <span class='fl'>1</span><span class='op'>:</span><span class='fu'><a href='https://dplyr.tidyverse.org/reference/context.html'>n</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># define all pages in the text</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>text_act2 <span class='op'>=</span> <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_split.html'>str_split</a></span><span class='op'>(</span><span class='va'>ham_act2</span>, pattern <span class='op'>=</span> <span class='st'>"\\n"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># create a new row with every new line</span></span>
+<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/nest.html'>unnest</a></span><span class='op'>(</span><span class='va'>text_act2</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>text_act2 <span class='op'>=</span> <span class='fu'><a href='https://stringr.tidyverse.org/reference/str_trim.html'>str_trim</a></span><span class='op'>(</span><span class='va'>text_act2</span><span class='op'>)</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'>## do some tidying</span></span>
+<span><span class='va'>tunes_act1</span> <span class='op'>&lt;-</span> <span class='va'>act1_lines</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># create a tunes data frame</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>song <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'><a href='https://stringr.tidyverse.org/reference/str_detect.html'>str_detect</a></span><span class='op'>(</span><span class='va'>text_act1</span>, <span class='st'>"Song"</span><span class='op'>)</span>, <span class='va'>text_act1</span>, <span class='cn'>NA</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># create a song column</span></span>
+<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/fill.html'>fill</a></span><span class='op'>(</span><span class='va'>song</span>, .direction <span class='op'>=</span> <span class='st'>"down"</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># fill down to create rows</span></span>
+<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/separate.html'>separate</a></span><span class='op'>(</span>col <span class='op'>=</span> <span class='va'>song</span>, into <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"so"</span>, <span class='st'>"no"</span><span class='op'>)</span>, sep <span class='op'>=</span> <span class='st'>" "</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># create new columns with song in one and number in the other</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>song <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/numeric.html'>as.numeric</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/utils/roman.html'>as.roman</a></span><span class='op'>(</span><span class='va'>no</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># number column as roman numeral</span></span>
+<span></span>
+<span><span class='va'>tunes_act2</span> <span class='op'>&lt;-</span> <span class='va'>act2_lines</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># create a tunes data frame</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>song <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='fu'><a href='https://stringr.tidyverse.org/reference/str_detect.html'>str_detect</a></span><span class='op'>(</span><span class='va'>text_act2</span>, <span class='st'>"Song"</span><span class='op'>)</span>, <span class='va'>text_act2</span>, <span class='cn'>NA</span><span class='op'>)</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># create a song column</span></span>
+<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/fill.html'>fill</a></span><span class='op'>(</span><span class='va'>song</span>, .direction <span class='op'>=</span> <span class='st'>"down"</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># fill down to create rows</span></span>
+<span>  <span class='fu'><a href='https://tidyr.tidyverse.org/reference/separate.html'>separate</a></span><span class='op'>(</span>col <span class='op'>=</span> <span class='va'>song</span>, into <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"so"</span>, <span class='st'>"no"</span><span class='op'>)</span>, sep <span class='op'>=</span> <span class='st'>" "</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># create new columns with song in one and number in the other</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>song <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/numeric.html'>as.numeric</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/utils/roman.html'>as.roman</a></span><span class='op'>(</span><span class='va'>no</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># number column as roman numeral</span></span></code></pre>
 </div>
 </div>
-<h2 id="find-word-counts-and-remove-stop-words">Find Word Counts and Remove Stop Words</h2>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># unnest the words in each column of the act 1 text</span>
-<span class='va'>words_act1</span> <span class='op'>&lt;-</span> <span class='va'>tunes_act1</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> 
-  <span class='fu'><a href='https://rdrr.io/pkg/tidytext/man/unnest_tokens.html'>unnest_tokens</a></span><span class='op'>(</span><span class='va'>word</span>, <span class='va'>text_act1</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> 
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>ham_act1</span><span class='op'>)</span>
-
-<span class='co'># unnest the words in each column of the act 2 text</span>
-<span class='va'>words_act2</span> <span class='op'>&lt;-</span> <span class='va'>tunes_act2</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> 
-  <span class='fu'><a href='https://rdrr.io/pkg/tidytext/man/unnest_tokens.html'>unnest_tokens</a></span><span class='op'>(</span><span class='va'>word</span>, <span class='va'>text_act2</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> 
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>ham_act2</span><span class='op'>)</span>
-
-<span class='co'># find word count of act 1 separated by song</span>
-<span class='va'>act1_wordcount</span> <span class='op'>&lt;-</span> <span class='va'>words_act1</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> 
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/count.html'>count</a></span><span class='op'>(</span><span class='va'>song</span>, <span class='va'>word</span><span class='op'>)</span>
-
-<span class='co'># find word count of act 2 separated by song</span>
-<span class='va'>act2_wordcount</span> <span class='op'>&lt;-</span> <span class='va'>words_act2</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> 
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/count.html'>count</a></span><span class='op'>(</span><span class='va'>song</span>, <span class='va'>word</span><span class='op'>)</span>
-
-<span class='co'># Remove stop words in act 1</span>
-<span class='va'>words_act1_clean</span> <span class='op'>&lt;-</span> <span class='va'>words_act1</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> 
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter-joins.html'>anti_join</a></span><span class='op'>(</span><span class='va'>stop_words</span>, by <span class='op'>=</span> <span class='st'>"word"</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> 
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>song_name <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/case_when.html'>case_when</a></span><span class='op'>(</span> <span class='co'># rename songs in act 1</span>
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"1"</span> <span class='op'>~</span> <span class='st'>"Alexander Hamilton"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"2"</span> <span class='op'>~</span> <span class='st'>"Aaron Burr, Sir"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"3"</span> <span class='op'>~</span> <span class='st'>"My Shot"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"4"</span> <span class='op'>~</span> <span class='st'>"The Story of Tonight"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"5"</span> <span class='op'>~</span> <span class='st'>"The Schuyler Sisters"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"6"</span> <span class='op'>~</span> <span class='st'>"Farmer Refuted"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"7"</span> <span class='op'>~</span> <span class='st'>"You'll Be Back"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"8"</span> <span class='op'>~</span> <span class='st'>"Right Hand Man"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"9"</span> <span class='op'>~</span> <span class='st'>"A Winter's Ball"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"10"</span> <span class='op'>~</span> <span class='st'>"Helpless"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"11"</span> <span class='op'>~</span> <span class='st'>"Satisfied"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"12"</span> <span class='op'>~</span> <span class='st'>"The Story of \nTonight (Reprise)"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"13"</span> <span class='op'>~</span> <span class='st'>"Wait for It"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"14"</span> <span class='op'>~</span> <span class='st'>"Stay Alive"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"15"</span> <span class='op'>~</span> <span class='st'>"Ten Duel Commandments"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"16"</span> <span class='op'>~</span> <span class='st'>"Meet Me Inside"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"17"</span> <span class='op'>~</span> <span class='st'>"That Would Be Enough"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"18"</span> <span class='op'>~</span> <span class='st'>"Guns and Ships"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"19"</span> <span class='op'>~</span> <span class='st'>"History Has Its Eyes on You"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"20"</span> <span class='op'>~</span> <span class='st'>"Yorktown (The World \nTurned Upside Down)"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"21"</span> <span class='op'>~</span> <span class='st'>"What Comes Next?"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"22"</span> <span class='op'>~</span> <span class='st'>"Dear Theodosia"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"23"</span> <span class='op'>~</span> <span class='st'>"Non-Stop"</span>
-  <span class='op'>)</span><span class='op'>)</span>
-
-<span class='co'># remove stop words in act 2</span>
-<span class='va'>words_act2_clean</span> <span class='op'>&lt;-</span> <span class='va'>words_act2</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> 
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter-joins.html'>anti_join</a></span><span class='op'>(</span><span class='va'>stop_words</span>, by <span class='op'>=</span> <span class='st'>"word"</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> 
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>song_name <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/case_when.html'>case_when</a></span><span class='op'>(</span> <span class='co'># rename songs in act 2</span>
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"1"</span> <span class='op'>~</span> <span class='st'>"What'd I Miss"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"2"</span> <span class='op'>~</span> <span class='st'>"Cabinet Battle #1"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"3"</span> <span class='op'>~</span> <span class='st'>"Take a Break"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"4"</span> <span class='op'>~</span> <span class='st'>"Say No to This"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"5"</span> <span class='op'>~</span> <span class='st'>"The Room Where It Happens"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"6"</span> <span class='op'>~</span> <span class='st'>"Schuyler Defeated"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"7"</span> <span class='op'>~</span> <span class='st'>"Cabinet Battle #2"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"8"</span> <span class='op'>~</span> <span class='st'>"Washington on Your Side"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"9"</span> <span class='op'>~</span> <span class='st'>"One Last Time"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"10"</span> <span class='op'>~</span> <span class='st'>"I Know Him"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"11"</span> <span class='op'>~</span> <span class='st'>"The Adams Administration"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"12"</span> <span class='op'>~</span> <span class='st'>"We Know"</span>, 
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"13"</span> <span class='op'>~</span> <span class='st'>"Hurricane"</span>, 
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"14"</span> <span class='op'>~</span> <span class='st'>"The Reynolds Pamphlet"</span>, 
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"15"</span> <span class='op'>~</span> <span class='st'>"Burn"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"16"</span> <span class='op'>~</span> <span class='st'>"Blow Us All Away"</span>, 
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"17"</span> <span class='op'>~</span> <span class='st'>"Stay Alive - Reprise"</span>, 
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"18"</span> <span class='op'>~</span> <span class='st'>"It's Quiet Uptown"</span>, 
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"19"</span> <span class='op'>~</span> <span class='st'>"The Election of 1800"</span>, 
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"20"</span> <span class='op'>~</span> <span class='st'>"Your Obedient Servant"</span>, 
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"21"</span> <span class='op'>~</span> <span class='st'>"Best of Wives and \nBest of Women"</span>, 
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"22"</span> <span class='op'>~</span> <span class='st'>"The World Was Wide Enough"</span>,
-    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"23"</span> <span class='op'>~</span> <span class='st'>"Who Lives, Who Dies, \nWho Tells Your Story"</span>
-  <span class='op'>)</span><span class='op'>)</span>
-
-<span class='co'># find word counts without stop words in act 1</span>
-<span class='va'>act1_nonstop_counts</span> <span class='op'>&lt;-</span> <span class='va'>words_act1_clean</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> 
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/count.html'>count</a></span><span class='op'>(</span><span class='va'>song</span>, <span class='va'>song_name</span>, <span class='va'>word</span><span class='op'>)</span>
-
-<span class='co'># find word counts without stop words in act 2</span>
-<span class='va'>act2_nonstop_counts</span> <span class='op'>&lt;-</span> <span class='va'>words_act2_clean</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> 
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/count.html'>count</a></span><span class='op'>(</span><span class='va'>song</span>, <span class='va'>song_name</span>, <span class='va'>word</span><span class='op'>)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='co'>## Find word counts of each act separated by song</span></span>
+<span><span class='co'># unnest the words in each column of the act 1 text</span></span>
+<span><span class='va'>words_act1</span> <span class='op'>&lt;-</span> <span class='va'>tunes_act1</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://rdrr.io/pkg/tidytext/man/unnest_tokens.html'>unnest_tokens</a></span><span class='op'>(</span><span class='va'>word</span>, <span class='va'>text_act1</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>ham_act1</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># unnest the words in each column of the act 2 text</span></span>
+<span><span class='va'>words_act2</span> <span class='op'>&lt;-</span> <span class='va'>tunes_act2</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://rdrr.io/pkg/tidytext/man/unnest_tokens.html'>unnest_tokens</a></span><span class='op'>(</span><span class='va'>word</span>, <span class='va'>text_act2</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/select.html'>select</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>ham_act2</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># find word count of act 1 separated by song</span></span>
+<span><span class='va'>act1_wordcount</span> <span class='op'>&lt;-</span> <span class='va'>words_act1</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/count.html'>count</a></span><span class='op'>(</span><span class='va'>song</span>, <span class='va'>word</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># find word count of act 2 separated by song</span></span>
+<span><span class='va'>act2_wordcount</span> <span class='op'>&lt;-</span> <span class='va'>words_act2</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/count.html'>count</a></span><span class='op'>(</span><span class='va'>song</span>, <span class='va'>word</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'>## Remove stop words</span></span>
+<span><span class='co'># Remove stop words in act 1</span></span>
+<span><span class='va'>words_act1_clean</span> <span class='op'>&lt;-</span> <span class='va'>words_act1</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter-joins.html'>anti_join</a></span><span class='op'>(</span><span class='va'>stop_words</span>, by <span class='op'>=</span> <span class='st'>"word"</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>song_name <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/case_when.html'>case_when</a></span><span class='op'>(</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"1"</span> <span class='op'>~</span> <span class='st'>"Alexander Hamilton"</span>, <span class='co'># rename song 1</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"2"</span> <span class='op'>~</span> <span class='st'>"Aaron Burr, Sir"</span>, <span class='co'># rename song 2</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"3"</span> <span class='op'>~</span> <span class='st'>"My Shot"</span>, <span class='co'># rename song 3</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"4"</span> <span class='op'>~</span> <span class='st'>"The Story of Tonight"</span>, <span class='co'># rename song 4</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"5"</span> <span class='op'>~</span> <span class='st'>"The Schuyler Sisters"</span>, <span class='co'># rename song 5</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"6"</span> <span class='op'>~</span> <span class='st'>"Farmer Refuted"</span>, <span class='co'># rename song 6</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"7"</span> <span class='op'>~</span> <span class='st'>"You'll Be Back"</span>, <span class='co'># rename song 7</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"8"</span> <span class='op'>~</span> <span class='st'>"Right Hand Man"</span>, <span class='co'># rename song 8</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"9"</span> <span class='op'>~</span> <span class='st'>"A Winter's Ball"</span>, <span class='co'># rename song 9</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"10"</span> <span class='op'>~</span> <span class='st'>"Helpless"</span>, <span class='co'># rename song 10</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"11"</span> <span class='op'>~</span> <span class='st'>"Satisfied"</span>, <span class='co'># rename song 11</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"12"</span> <span class='op'>~</span> <span class='st'>"The Story of \nTonight (Reprise)"</span>, <span class='co'># rename song 12</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"13"</span> <span class='op'>~</span> <span class='st'>"Wait for It"</span>, <span class='co'># rename song 13</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"14"</span> <span class='op'>~</span> <span class='st'>"Stay Alive"</span>, <span class='co'># rename song 14</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"15"</span> <span class='op'>~</span> <span class='st'>"Ten Duel Commandments"</span>, <span class='co'># rename song 15</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"16"</span> <span class='op'>~</span> <span class='st'>"Meet Me Inside"</span>, <span class='co'># rename song 16</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"17"</span> <span class='op'>~</span> <span class='st'>"That Would Be Enough"</span>, <span class='co'># rename song 17</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"18"</span> <span class='op'>~</span> <span class='st'>"Guns and Ships"</span>, <span class='co'># rename song 18</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"19"</span> <span class='op'>~</span> <span class='st'>"History Has Its Eyes on You"</span>, <span class='co'># rename song 19</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"20"</span> <span class='op'>~</span> <span class='st'>"Yorktown (The World \nTurned Upside Down)"</span>, <span class='co'># rename song 20</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"21"</span> <span class='op'>~</span> <span class='st'>"What Comes Next?"</span>, <span class='co'># rename song 21</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"22"</span> <span class='op'>~</span> <span class='st'>"Dear Theodosia"</span>, <span class='co'># rename song 22</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"23"</span> <span class='op'>~</span> <span class='st'>"Non-Stop"</span> <span class='co'># rename song 23</span></span>
+<span>  <span class='op'>)</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># remove stop words in act 2</span></span>
+<span><span class='va'>words_act2_clean</span> <span class='op'>&lt;-</span> <span class='va'>words_act2</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter-joins.html'>anti_join</a></span><span class='op'>(</span><span class='va'>stop_words</span>, by <span class='op'>=</span> <span class='st'>"word"</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>song_name <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/case_when.html'>case_when</a></span><span class='op'>(</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"1"</span> <span class='op'>~</span> <span class='st'>"What'd I Miss"</span>, <span class='co'># rename song 1</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"2"</span> <span class='op'>~</span> <span class='st'>"Cabinet Battle #1"</span>, <span class='co'># rename song 2</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"3"</span> <span class='op'>~</span> <span class='st'>"Take a Break"</span>, <span class='co'># rename song 3</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"4"</span> <span class='op'>~</span> <span class='st'>"Say No to This"</span>, <span class='co'># rename song 4</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"5"</span> <span class='op'>~</span> <span class='st'>"The Room Where It Happens"</span>, <span class='co'># rename song 5</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"6"</span> <span class='op'>~</span> <span class='st'>"Schuyler Defeated"</span>, <span class='co'># rename song 6</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"7"</span> <span class='op'>~</span> <span class='st'>"Cabinet Battle #2"</span>, <span class='co'># rename song 7</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"8"</span> <span class='op'>~</span> <span class='st'>"Washington on Your Side"</span>, <span class='co'># rename song 8</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"9"</span> <span class='op'>~</span> <span class='st'>"One Last Time"</span>, <span class='co'># rename song 9</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"10"</span> <span class='op'>~</span> <span class='st'>"I Know Him"</span>, <span class='co'># rename song 10</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"11"</span> <span class='op'>~</span> <span class='st'>"The Adams Administration"</span>, <span class='co'># rename song 11</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"12"</span> <span class='op'>~</span> <span class='st'>"We Know"</span>, <span class='co'># rename song 12</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"13"</span> <span class='op'>~</span> <span class='st'>"Hurricane"</span>, <span class='co'># rename song 13</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"14"</span> <span class='op'>~</span> <span class='st'>"The Reynolds Pamphlet"</span>, <span class='co'># rename song 14</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"15"</span> <span class='op'>~</span> <span class='st'>"Burn"</span>, <span class='co'># rename song 15</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"16"</span> <span class='op'>~</span> <span class='st'>"Blow Us All Away"</span>, <span class='co'># rename song 16</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"17"</span> <span class='op'>~</span> <span class='st'>"Stay Alive - Reprise"</span>, <span class='co'># rename song 17</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"18"</span> <span class='op'>~</span> <span class='st'>"It's Quiet Uptown"</span>, <span class='co'># rename song 18</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"19"</span> <span class='op'>~</span> <span class='st'>"The Election of 1800"</span>, <span class='co'># rename song 19</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"20"</span> <span class='op'>~</span> <span class='st'>"Your Obedient Servant"</span>, <span class='co'># rename song 20</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"21"</span> <span class='op'>~</span> <span class='st'>"Best of Wives and \nBest of Women"</span>, <span class='co'># rename song 21</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"22"</span> <span class='op'>~</span> <span class='st'>"The World Was Wide Enough"</span>, <span class='co'># rename song 22</span></span>
+<span>    <span class='va'>song</span> <span class='op'>==</span> <span class='st'>"23"</span> <span class='op'>~</span> <span class='st'>"Who Lives, Who Dies, \nWho Tells Your Story"</span> <span class='co'># rename song 23</span></span>
+<span>  <span class='op'>)</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># find word counts without stop words in act 1</span></span>
+<span><span class='va'>act1_nonstop_counts</span> <span class='op'>&lt;-</span> <span class='va'>words_act1_clean</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/count.html'>count</a></span><span class='op'>(</span><span class='va'>song</span>, <span class='va'>song_name</span>, <span class='va'>word</span><span class='op'>)</span></span>
+<span></span>
+<span><span class='co'># find word counts without stop words in act 2</span></span>
+<span><span class='va'>act2_nonstop_counts</span> <span class='op'>&lt;-</span> <span class='va'>words_act2_clean</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/count.html'>count</a></span><span class='op'>(</span><span class='va'>song</span>, <span class='va'>song_name</span>, <span class='va'>word</span><span class='op'>)</span></span></code></pre>
 </div>
 </div>
 <h2 class="tabset tabset-fade" id="find-top-5-words-from-each-song-in-each-act">Find top 5 words from each song in each Act</h2>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># top 5 words in act 1</span>
-<span class='va'>act1_top5_words</span> <span class='op'>&lt;-</span> <span class='va'>act1_nonstop_counts</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>song</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/arrange.html'>arrange</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>n</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># arrange by decreasing number</span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/slice.html'>slice</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>5</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># choose top 5 words in each song</span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>ungroup</a></span><span class='op'>(</span><span class='op'>)</span> <span class='co'># stop grouping by song</span>
-
-<span class='co'># top 5 words in act 2</span>
-<span class='va'>act2_top5_words</span> <span class='op'>&lt;-</span> <span class='va'>act2_nonstop_counts</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>song</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/arrange.html'>arrange</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>n</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># arrange by decreasing number</span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/slice.html'>slice</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>5</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># choose top 5 words in each song</span>
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>ungroup</a></span><span class='op'>(</span><span class='op'>)</span> <span class='co'># stop grouping by song</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='co'># top 5 words in act 1</span></span>
+<span><span class='va'>act1_top5_words</span> <span class='op'>&lt;-</span> <span class='va'>act1_nonstop_counts</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>song</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/arrange.html'>arrange</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>n</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># arrange by decreasing number</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/slice.html'>slice</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>5</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># choose top 5 words in each song</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>ungroup</a></span><span class='op'>(</span><span class='op'>)</span> <span class='co'># stop grouping by song</span></span>
+<span></span>
+<span><span class='co'># top 5 words in act 2</span></span>
+<span><span class='va'>act2_top5_words</span> <span class='op'>&lt;-</span> <span class='va'>act2_nonstop_counts</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>song</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/arrange.html'>arrange</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>n</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># arrange by decreasing number</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/slice.html'>slice</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>5</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># choose top 5 words in each song</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>ungroup</a></span><span class='op'>(</span><span class='op'>)</span> <span class='co'># stop grouping by song</span></span></code></pre>
 </div>
 </div>
-<h3 id="act-1">Act 1</h3>
+<h3 class="tabset tabset-fade" id="act-1">Act 1</h3>
 <h4 id="songs-1-6">Songs 1-6</h4>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class='co'># graph the top 5 words in song 1-6</span>
-<span class='va'>act1_1_6</span> <span class='op'>&lt;-</span> <span class='va'>act1_top5_words</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> 
-  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>song</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"1"</span>, <span class='st'>"2"</span>, <span class='st'>"3"</span>, <span class='st'>"4"</span>, <span class='st'>"5"</span>, <span class='st'>"6"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># filter for songs 1-6</span>
-
-<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>act1_1_6</span>, <span class='co'># specify data</span>
-       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>n</span>, y <span class='op'>=</span> <span class='fu'><a href='https://forcats.tidyverse.org/reference/fct_reorder.html'>fct_reorder</a></span><span class='op'>(</span><span class='va'>word</span>, <span class='va'>n</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define parameters</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_col</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"#f6c049"</span>, color <span class='op'>=</span> <span class='st'>"#a8a7a7"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define column graph and change colors</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>facet_wrap</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>song_name</span>, scales <span class='op'>=</span> <span class='st'>"free"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'>#separate by song</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Top 5 Words in Songs 1-6 in Hamilton: Act 1"</span>, <span class='co'># add title</span>
-       x <span class='op'>=</span> <span class='st'>"Count"</span>, <span class='co'># add x-axis label</span>
-       y <span class='op'>=</span> <span class='st'>"Word"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># add y-axis label</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>plot.title <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>hjust <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>, <span class='co'># center title</span>
-        panel.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='st'>"#404040"</span><span class='op'>)</span>, <span class='co'># outline panel</span>
-        plot.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"snow"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># color plot background</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='co'># graph the top 5 words in song 1-6</span></span>
+<span><span class='va'>act1_1_6</span> <span class='op'>&lt;-</span> <span class='va'>act1_top5_words</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>song</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"1"</span>, <span class='st'>"2"</span>, <span class='st'>"3"</span>, <span class='st'>"4"</span>, <span class='st'>"5"</span>, <span class='st'>"6"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># filter for songs 1-6</span></span>
+<span></span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>act1_1_6</span>, <span class='co'># specify data</span></span>
+<span>       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>n</span>, y <span class='op'>=</span> <span class='fu'><a href='https://forcats.tidyverse.org/reference/fct_reorder.html'>fct_reorder</a></span><span class='op'>(</span><span class='va'>word</span>, <span class='va'>n</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define parameters</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_col</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"#f6c049"</span>, color <span class='op'>=</span> <span class='st'>"#a8a7a7"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define column graph and change colors</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>facet_wrap</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>song_name</span>, scales <span class='op'>=</span> <span class='st'>"free"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'>#separate by song</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Top 5 Words in Songs 1-6 in Hamilton: Act 1"</span>, <span class='co'># add title</span></span>
+<span>       x <span class='op'>=</span> <span class='st'>"Count"</span>, <span class='co'># add x-axis label</span></span>
+<span>       y <span class='op'>=</span> <span class='st'>"Word"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># add y-axis label</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>plot.title <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>hjust <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>, <span class='co'># center title</span></span>
+<span>        panel.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='st'>"#404040"</span><span class='op'>)</span>, <span class='co'># outline panel</span></span>
+<span>        plot.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"snow"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># color plot background</span></span></code></pre>
 </div>
 <p><img src="hamilton_files/figure-html5/unnamed-chunk-4-1.png" width="624" /></p>
 </div>
+<p><strong>Figure 1.</strong> Top 5 Words in Songs 1-6 in Hamilton: Act 1. Between these 6 songs, the most frequently used word (“shot”) was counted 37 times in the song <em>My Shot</em>, featuring Hamilton, Laurens, Lafayette, Mulligan, Burr, and Company.</p>
+<h4 id="songs-7---12">Songs 7 - 12</h4>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>act1_7_12</span> <span class='op'>&lt;-</span> <span class='va'>act1_top5_words</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>song</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"7"</span>, <span class='st'>"8"</span>, <span class='st'>"9"</span>, <span class='st'>"10"</span>, <span class='st'>"11"</span>, <span class='st'>"12"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># filter for songs 7-12</span></span>
+<span></span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>act1_7_12</span>, <span class='co'># specify data</span></span>
+<span>       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>n</span>, y <span class='op'>=</span> <span class='va'>word</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define parameters</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_col</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"#f6c049"</span>, color <span class='op'>=</span> <span class='st'>"#a8a7a7"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define column graph and change colors</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>facet_wrap</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>song_name</span>, scales <span class='op'>=</span> <span class='st'>"free"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># separate by song</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Top 5 Words in Songs 7-12 in Hamilton: Act 1"</span>, <span class='co'># add title</span></span>
+<span>       x <span class='op'>=</span> <span class='st'>"Count"</span>, <span class='co'># add x-axis label</span></span>
+<span>       y <span class='op'>=</span> <span class='st'>"Word"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># add y-axis label</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>plot.title <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>hjust <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>, <span class='co'># center title</span></span>
+<span>        panel.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='st'>"#404040"</span><span class='op'>)</span>, <span class='co'># outline panel</span></span>
+<span>        plot.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"snow"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># change plot color</span></span></code></pre>
+</div>
+<p><img src="hamilton_files/figure-html5/unnamed-chunk-5-1.png" width="624" /></p>
+</div>
+<p><strong>Figure 2.</strong> Top 5 Words in Songs 7-12 in Hamilton: Act 1. Between these 6 songs, the most frequently used word (“da”) was counted 76 times in the song <em>You’ll Be Back</em>, featuring King George III and Company.</p>
+<h4 id="songs-13-18">Songs 13-18</h4>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>act1_13_18</span> <span class='op'>&lt;-</span> <span class='va'>act1_top5_words</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>song</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"13"</span>, <span class='st'>"14"</span>, <span class='st'>"15"</span>, <span class='st'>"16"</span>, <span class='st'>"17"</span>, <span class='st'>"18"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># filter for songs 13-18</span></span>
+<span></span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>act1_13_18</span>, <span class='co'># specify data</span></span>
+<span>       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>n</span>, y <span class='op'>=</span> <span class='va'>word</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define parameters</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_col</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"#f6c049"</span>, color <span class='op'>=</span> <span class='st'>"#a8a7a7"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define column graph and change colors + # hide legend</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>facet_wrap</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>song_name</span>, scales <span class='op'>=</span> <span class='st'>"free"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># separate by song</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Top 5 Words in Songs 13-18 in Hamilton: Act 1"</span>, <span class='co'># add title</span></span>
+<span>       x <span class='op'>=</span> <span class='st'>"Count"</span>, <span class='co'># add x-axis label</span></span>
+<span>       y <span class='op'>=</span> <span class='st'>"Word"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># add y-axis label</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>plot.title <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>hjust <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>, <span class='co'># center title</span></span>
+<span>        panel.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='st'>"#404040"</span><span class='op'>)</span>, <span class='co'># outline panel</span></span>
+<span>        plot.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"snow"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># change background color</span></span></code></pre>
+</div>
+<p><img src="hamilton_files/figure-html5/unnamed-chunk-6-1.png" width="624" /></p>
+</div>
+<p><strong>Figure 3.</strong> Top 5 Words in Songs 13-18 in Hamilton: Act 1. Between these 6 songs, the most frequently used word (“wait”) was counted 33 times in the song <em>Wait For It</em>, featuring Aaron Burr and Company.</p>
+<h4 id="songs-19-23">Songs 19-23</h4>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>act1_19_23</span> <span class='op'>&lt;-</span> <span class='va'>act1_top5_words</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>song</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"19"</span>, <span class='st'>"20"</span>, <span class='st'>"21"</span>, <span class='st'>"22"</span>, <span class='st'>"23"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># filter for songs 19-23</span></span>
+<span></span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>act1_19_23</span>, <span class='co'># specify data</span></span>
+<span>       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>n</span>, y <span class='op'>=</span> <span class='va'>word</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define parameters</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_col</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"#f6c049"</span>, color <span class='op'>=</span> <span class='st'>"#a8a7a7"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define column graph and change colors + # hide legend</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>facet_wrap</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>song_name</span>, scales <span class='op'>=</span> <span class='st'>"free"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># separate by song</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Top 5 Words in Songs 19-23 in Hamilton: Act 1"</span>, <span class='co'># add title</span></span>
+<span>       x <span class='op'>=</span> <span class='st'>"Count"</span>, <span class='co'># add x-axis label</span></span>
+<span>       y <span class='op'>=</span> <span class='st'>"Word"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># add y-axis label</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>plot.title <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>hjust <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>, <span class='co'># center title</span></span>
+<span>        panel.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='st'>"#404040"</span><span class='op'>)</span>, <span class='co'># outline panel</span></span>
+<span>        plot.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"snow"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># change plot color</span></span></code></pre>
+</div>
+<p><img src="hamilton_files/figure-html5/unnamed-chunk-7-1.png" width="624" /></p>
+</div>
+<p><strong>Figure 4.</strong> Top 5 Words in Songs 19-23 in Hamilton: Act 1. Between these 5 songs, the most frequently used word (“time”) was counted 14 times in the song <em>Non-Stop</em>, featuring Burr, Hamilton, Angelica, Eliza, Washington, and Company.</p>
+<h3 class="tabset tabset-fade" id="act-2">Act 2</h3>
+<h4 id="songs-1-6-1">Songs 1-6</h4>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>act2_1_6</span> <span class='op'>&lt;-</span> <span class='va'>act2_top5_words</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>song</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"1"</span>, <span class='st'>"2"</span>, <span class='st'>"3"</span>, <span class='st'>"4"</span>, <span class='st'>"5"</span>, <span class='st'>"6"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># filter for songs 1-6</span></span>
+<span></span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>act2_1_6</span>, <span class='co'># specify data</span></span>
+<span>       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>n</span>, y <span class='op'>=</span> <span class='va'>word</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define parameters</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_col</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"#f6c049"</span>, color <span class='op'>=</span> <span class='st'>"#a8a7a7"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define column graph and change colors</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>facet_wrap</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>song_name</span>, scales <span class='op'>=</span> <span class='st'>"free"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># separate by song</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Top 5 Words in Songs 1-6 in Hamilton: Act 2"</span>, <span class='co'># add title</span></span>
+<span>       x <span class='op'>=</span> <span class='st'>"Count"</span>, <span class='co'># change x-axis label</span></span>
+<span>       y <span class='op'>=</span> <span class='st'>"Word"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># change y-axis label</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>plot.title <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>hjust <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>, <span class='co'># center title</span></span>
+<span>        panel.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='st'>"#404040"</span><span class='op'>)</span>, <span class='co'># outline panel</span></span>
+<span>        plot.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"snow"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># change plot color</span></span></code></pre>
+</div>
+<p><img src="hamilton_files/figure-html5/unnamed-chunk-8-1.png" width="624" /></p>
+</div>
+<p><strong>Figure 5.</strong> Top 5 Words in Songs 1-6 in Hamilton: Act 2. Between these 6 songs, the most frequently used word (“happened”) was counted 20 times in the song <em>The Room Where It Happens</em>, featuring Burr, Hamilton, Jefferson, Madison, and Company.</p>
+<h4 id="songs-7-12">Songs 7-12</h4>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>act2_7_12</span> <span class='op'>&lt;-</span> <span class='va'>act2_top5_words</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>song</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"7"</span>, <span class='st'>"8"</span>, <span class='st'>"9"</span>, <span class='st'>"10"</span>, <span class='st'>"11"</span>, <span class='st'>"12"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># filter for songs 6-12</span></span>
+<span></span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>act2_7_12</span>, <span class='co'># specify data</span></span>
+<span>       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>n</span>, y <span class='op'>=</span> <span class='va'>word</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define parameters</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_col</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"#f6c049"</span>, color <span class='op'>=</span> <span class='st'>"#a8a7a7"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define column graph and change colors# hide legend</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>facet_wrap</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>song_name</span>, scales <span class='op'>=</span> <span class='st'>"free"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># separate by song</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Top 5 Words in Songs 7-12 in Hamilton: Act 2"</span>, <span class='co'># add title</span></span>
+<span>       x <span class='op'>=</span> <span class='st'>"Count"</span>, <span class='co'># change x-axis label</span></span>
+<span>       y <span class='op'>=</span> <span class='st'>"Word"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># change y-axis label</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>plot.title <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>hjust <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>, <span class='co'># center title</span></span>
+<span>        panel.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='st'>"#404040"</span><span class='op'>)</span>, <span class='co'># outline panel</span></span>
+<span>        plot.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"snow"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># change plot color</span></span></code></pre>
+</div>
+<p><img src="hamilton_files/figure-html5/unnamed-chunk-9-1.png" width="624" /></p>
+</div>
+<p><strong>Figure 6.</strong> Top 5 Words in Songs 7-12 in Hamilton: Act 2. Between these 6 songs, the most frequently used word (“nice”) was counted 16 times in the song <em>Washington on Your Side</em>, featuring Burr, Jefferson, Madison, and Company.</p>
+<h4 id="songs-13-18-1">Songs 13-18</h4>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>act2_13_18</span> <span class='op'>&lt;-</span> <span class='va'>act2_top5_words</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>song</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"13"</span>, <span class='st'>"14"</span>, <span class='st'>"15"</span>, <span class='st'>"16"</span>, <span class='st'>"17"</span>, <span class='st'>"18"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># filter for songs 13-18</span></span>
+<span></span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>act2_13_18</span>, <span class='co'># specify data</span></span>
+<span>       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>n</span>, y <span class='op'>=</span> <span class='va'>word</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define parameters</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_col</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"#f6c049"</span>, color <span class='op'>=</span> <span class='st'>"#a8a7a7"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define column graph and change colors</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>facet_wrap</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>song_name</span>, scales <span class='op'>=</span> <span class='st'>"free"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># separate by song</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Top 5 Words in Songs 13-18 in Hamilton: Act 2"</span>, <span class='co'># add title</span></span>
+<span>       x <span class='op'>=</span> <span class='st'>"Count"</span>, <span class='co'># change x-axis label</span></span>
+<span>       y <span class='op'>=</span> <span class='st'>"Word"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># change y-axis label</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>plot.title <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>hjust <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>, <span class='co'># center title</span></span>
+<span>        panel.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='st'>"#404040"</span><span class='op'>)</span>, <span class='co'># outline panel</span></span>
+<span>        plot.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"snow"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># change plot color</span></span></code></pre>
+</div>
+<p><img src="hamilton_files/figure-html5/unnamed-chunk-10-1.png" width="624" /></p>
+</div>
+<p><strong>Figure 7.</strong> Top 5 Words in Songs 13-18 in Hamilton: Act 2. Between these 6 songs, the most frequently used word (“president”) was counted 16 times in the song <em>The Reynolds Pamphlet</em>, featuring Jefferson, Madison, Burr, Hamilton, Angelica, James Reynolds, and Company.</p>
+<h4 id="songs-19-23-1">Songs 19-23</h4>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>act2_19_23</span> <span class='op'>&lt;-</span> <span class='va'>act2_top5_words</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>song</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"19"</span>, <span class='st'>"20"</span>, <span class='st'>"21"</span>, <span class='st'>"22"</span>, <span class='st'>"23"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># filter for songs 19-23</span></span>
+<span></span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>act2_19_23</span>, <span class='co'># specify data</span></span>
+<span>       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>n</span>, y <span class='op'>=</span> <span class='va'>word</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define parameters</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_col</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"#f6c049"</span>, color <span class='op'>=</span> <span class='st'>"#a8a7a7"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'>#define column graph and change color</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>facet_wrap</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>song_name</span>, scales <span class='op'>=</span> <span class='st'>"free"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># separate by song</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Top 5 Words in Songs 19-23 in Hamilton: Act 2"</span>, <span class='co'># add title</span></span>
+<span>       x <span class='op'>=</span> <span class='st'>"Count"</span>, <span class='co'># change x-axis label</span></span>
+<span>       y <span class='op'>=</span> <span class='st'>"Word"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># change y-axis label</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>plot.title <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>hjust <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>, <span class='co'># center title</span></span>
+<span>        panel.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='st'>"#404040"</span><span class='op'>)</span>, <span class='co'># outline panel</span></span>
+<span>        plot.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"snow"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># change plot color</span></span></code></pre>
+</div>
+<p><img src="hamilton_files/figure-html5/unnamed-chunk-11-1.png" width="624" /></p>
+</div>
+<p><strong>Figure 8.</strong> Top 5 Words in Songs 19-23 in Hamilton: Act 2. Between these 5 songs, the most frequently used word (“burr”) was counted 18 times in the song <em>The Election of 1800</em>, featuring Jefferson, Madison, Burr, Hamilton, and Company.</p>
+<h2 class="tabset tabset-fade" id="word-clouds-of-top-100-words-in-each-act">Word clouds of top 100 words in each act</h2>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>act1_top100</span> <span class='op'>&lt;-</span> <span class='va'>act1_nonstop_counts</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/arrange.html'>arrange</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>n</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># arrange counts in descending order</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/slice.html'>slice</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>100</span><span class='op'>)</span> <span class='co'># choose top 100 only</span></span>
+<span></span>
+<span><span class='va'>act2_top100</span> <span class='op'>&lt;-</span> <span class='va'>act2_nonstop_counts</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/arrange.html'>arrange</a></span><span class='op'>(</span><span class='op'>-</span><span class='va'>n</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> <span class='co'># arrange counts in descending order</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/slice.html'>slice</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>100</span><span class='op'>)</span> <span class='co'># choose top 100 only</span></span></code></pre>
+</div>
+</div>
+<h3 id="act-1-1">Act 1</h3>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>act1_top100</span>, <span class='co'># specify data</span></span>
+<span>                     <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>label <span class='op'>=</span> <span class='va'>word</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://lepennec.github.io/ggwordcloud/reference/geom_text_wordcloud.html'>geom_text_wordcloud</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='va'>n</span>, size <span class='op'>=</span> <span class='va'>n</span><span class='op'>)</span>, <span class='co'># define color and size</span></span>
+<span>                      shape <span class='op'>=</span> <span class='st'>"pentagon"</span>, <span class='co'># change word cloud shape</span></span>
+<span>                      eccentricity <span class='op'>=</span> <span class='fl'>0.4</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_size.html'>scale_size_area</a></span><span class='op'>(</span>max_size <span class='op'>=</span> <span class='fl'>9</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># change size of word cloud</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_color_gradientn</a></span><span class='op'>(</span>colors <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"darkgreen"</span>, <span class='st'>"blue"</span>, <span class='st'>"purple"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># change colors</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_minimal</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># theme minimal</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Word Cloud of Top 100 Words From Hamilton: Act 1"</span><span class='op'>)</span> <span class='co'># add a title</span></span></code></pre>
+</div>
+<p><img src="hamilton_files/figure-html5/unnamed-chunk-13-1.png" width="624" /></p>
+</div>
+<p><strong>Figure 9.</strong> Word Cloud of Top 100 Words From Hamilton: Act 1. Between all the songs in Act 1, the most frequently used word (“da”) was counted 76 times in the song <em>You’ll Be Back</em>, featuring King George III and Company.</p>
+<h3 id="act-2-1">Act 2</h3>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>act2_top100</span>, <span class='co'># specify data</span></span>
+<span>                     <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>label <span class='op'>=</span> <span class='va'>word</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://lepennec.github.io/ggwordcloud/reference/geom_text_wordcloud.html'>geom_text_wordcloud</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='va'>n</span>, size <span class='op'>=</span> <span class='va'>n</span><span class='op'>)</span>, <span class='co'># define color and size</span></span>
+<span>                      shape <span class='op'>=</span> <span class='st'>"pentagon"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># change word cloud shape</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_color_gradientn</a></span><span class='op'>(</span>colors <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"darkgreen"</span>, <span class='st'>"blue"</span>, <span class='st'>"purple"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># change colors</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_size.html'>scale_size_area</a></span><span class='op'>(</span>max_size <span class='op'>=</span> <span class='fl'>6</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># change size of word cloud</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_minimal</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># minimal theme</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Word Cloud of Top 100 Words From Hamilton: Act 2"</span><span class='op'>)</span> <span class='co'># add a title</span></span></code></pre>
+</div>
+<p><img src="hamilton_files/figure-html5/unnamed-chunk-14-1.png" width="624" /></p>
+</div>
+<p><strong>Figure 10.</strong> Word Cloud of Top 100 Words From Hamilton: Act 2. Between all the songs in Act 2, the most frequently used word (“happened”) was counted 20 times in the song <em>The Room Where It Happens</em>, featuring Burr, Hamilton, Jefferson, Madison, and Company.</p>
+<h2 class="tabset tabset-fade" id="sentiment-analysis">Sentiment Analysis</h2>
+<h3 class="tabset tabset-fade" id="afinn-lexicon">“afinn” Lexicon</h3>
+<h4 id="act-1-mean">Act 1 Mean</h4>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>act1_afinn</span> <span class='op'>&lt;-</span> <span class='va'>words_act1_clean</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate-joins.html'>inner_join</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/pkg/tidytext/man/get_sentiments.html'>get_sentiments</a></span><span class='op'>(</span><span class='st'>"afinn"</span><span class='op'>)</span>, by <span class='op'>=</span> <span class='st'>"word"</span><span class='op'>)</span> <span class='co'># get sentiments in act 1</span></span>
+<span></span>
+<span><span class='va'>act1_afinn_means</span> <span class='op'>&lt;-</span> <span class='va'>act1_afinn</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>song</span>, <span class='va'>song_name</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/summarise.html'>summarize</a></span><span class='op'>(</span>mean_afinn <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>value</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># find mean sentiment value per song</span></span>
+<span></span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>act1_afinn_means</span>, <span class='co'># specify data</span></span>
+<span>       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='fu'><a href='https://forcats.tidyverse.org/reference/fct_rev.html'>fct_rev</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/factor.html'>factor</a></span><span class='op'>(</span><span class='va'>song_name</span><span class='op'>)</span><span class='op'>)</span>, y <span class='op'>=</span> <span class='va'>mean_afinn</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define parameters</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_col</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"#f6c049"</span>, color <span class='op'>=</span> <span class='st'>"#a8a7a7"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define column graph and change colors</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/coord_flip.html'>coord_flip</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># flip coordinates</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Mean Afinn Sentiment Scores by Song in Hamilton: Act 1"</span>, <span class='co'># add title</span></span>
+<span>       x <span class='op'>=</span> <span class='st'>"Song"</span>, <span class='co'># add x-axis label</span></span>
+<span>       y <span class='op'>=</span> <span class='st'>"Mean Afinn Score"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># add y-axis label</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>plot.title <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>hjust <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>, <span class='co'># center title</span></span>
+<span>        panel.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='st'>"#404040"</span><span class='op'>)</span>, <span class='co'># outline panel</span></span>
+<span>        plot.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"snow"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># color plot background</span></span></code></pre>
+</div>
+<p><img src="hamilton_files/figure-html5/unnamed-chunk-15-1.png" width="624" /></p>
+</div>
+<p><strong>Figure 11.</strong> Mean Afinn Sentiment Scores by Song in Hamilton: Act 1. Overall, the song with the lowest Afinn score is <em>Alexander Hamilton</em>; the song with the higest is <em>Satisfied</em>.</p>
+<h4 id="act-2-mean">Act 2 Mean</h4>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>act2_afinn</span> <span class='op'>&lt;-</span> <span class='va'>words_act2_clean</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate-joins.html'>inner_join</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/pkg/tidytext/man/get_sentiments.html'>get_sentiments</a></span><span class='op'>(</span><span class='st'>"afinn"</span><span class='op'>)</span>, by <span class='op'>=</span> <span class='st'>"word"</span><span class='op'>)</span> <span class='co'># get sentiments for act </span></span>
+<span></span>
+<span><span class='va'>act2_afinn_means</span> <span class='op'>&lt;-</span> <span class='va'>act2_afinn</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>song</span>, <span class='va'>song_name</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/summarise.html'>summarize</a></span><span class='op'>(</span>mean_afinn <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>value</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># find mean sentiment values for Act 2</span></span>
+<span></span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>act2_afinn_means</span>, <span class='co'># specify data </span></span>
+<span>       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='fu'><a href='https://forcats.tidyverse.org/reference/fct_rev.html'>fct_rev</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/factor.html'>factor</a></span><span class='op'>(</span><span class='va'>song_name</span><span class='op'>)</span><span class='op'>)</span>, y <span class='op'>=</span> <span class='va'>mean_afinn</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define parameters</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_col</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"#f6c049"</span>, color <span class='op'>=</span> <span class='st'>"#a8a7a7"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define column graph and change colors</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/coord_flip.html'>coord_flip</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># flip coordinates</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Mean Afinn Sentiment Scores in Hamilton: Act 2"</span>, <span class='co'># add title</span></span>
+<span>       x <span class='op'>=</span> <span class='st'>"Mean Afinn Score"</span>, <span class='co'># add x-axis label</span></span>
+<span>       y <span class='op'>=</span> <span class='st'>"Song"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># add y-axis label</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>plot.title <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>hjust <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>, <span class='co'># center title</span></span>
+<span>        panel.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='st'>"#404040"</span><span class='op'>)</span>, <span class='co'># outline panel</span></span>
+<span>        plot.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"snow"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># color plot background</span></span></code></pre>
+</div>
+<p><img src="hamilton_files/figure-html5/unnamed-chunk-16-1.png" width="624" /></p>
+</div>
+<p><strong>Figure 12.</strong> Mean Afinn Sentiment Scores by Song in Hamilton: Act 2. Overall, the song with the lowest Afinn score is <em>The Adams Administration</em>; the song with the highest is <em>We Know</em>.</p>
+<h3 class="tabset tabset-fade" id="nrc-lexicon">“NRC” lexicon</h3>
+<h4 class="tabset tabset-fade" id="act-1-2">Act 1</h4>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>act1_nrc</span> <span class='op'>&lt;-</span> <span class='va'>words_act1_clean</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate-joins.html'>inner_join</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/pkg/tidytext/man/get_sentiments.html'>get_sentiments</a></span><span class='op'>(</span><span class='st'>"nrc"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># find nrc sentiments</span></span></code></pre>
+</div>
+</div>
+<h5 id="songs-1-6-2">Songs 1-6</h5>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>act1_nrc_1_6</span> <span class='op'>&lt;-</span> <span class='va'>act1_nrc</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/count.html'>count</a></span><span class='op'>(</span><span class='va'>song</span>, <span class='va'>song_name</span>, <span class='va'>sentiment</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>song</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"1"</span>, <span class='st'>"2"</span>, <span class='st'>"3"</span>, <span class='st'>"4"</span>, <span class='st'>"5"</span>, <span class='st'>"6"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># select songs 1-6</span></span>
+<span>  </span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>act1_nrc_1_6</span>, <span class='co'>#specify data</span></span>
+<span>       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>sentiment</span>, y <span class='op'>=</span> <span class='va'>n</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define parameters</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_col</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"#f6c049"</span>, color <span class='op'>=</span> <span class='st'>"#a8a7a7"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define column graph and change colors</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/coord_flip.html'>coord_flip</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># flip axes</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>facet_wrap</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>song_name</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># separate by song</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"NRC Sentiments in Songs 1-6 in Hamilton: Act 1"</span>, <span class='co'># add title</span></span>
+<span>       x <span class='op'>=</span> <span class='st'>"Word Count"</span>, <span class='co'># add x-axis label</span></span>
+<span>       y <span class='op'>=</span> <span class='st'>"Sentiment"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># add y-axis label</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>plot.title <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>hjust <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>, <span class='co'># center title</span></span>
+<span>        panel.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='st'>"#404040"</span><span class='op'>)</span>, <span class='co'># outline panel</span></span>
+<span>        plot.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"snow"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># color plot background</span></span></code></pre>
+</div>
+<p><img src="hamilton_files/figure-html5/unnamed-chunk-18-1.png" width="624" /></p>
+</div>
+<p><strong>Figure 13.</strong> NRC Sentiments of Songs 1-6 in Hamilton: Act 1. Of these 6 songs, <em>My Shot</em> has the most amount of sentimental words, while <em>The Story of Tonight</em> has few.</p>
+<h5 id="songs-7-12-1">Songs 7-12</h5>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>act1_nrc_7_12</span> <span class='op'>&lt;-</span> <span class='va'>act1_nrc</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/count.html'>count</a></span><span class='op'>(</span><span class='va'>song</span>, <span class='va'>song_name</span>, <span class='va'>sentiment</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>song</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"7"</span>, <span class='st'>"8"</span>, <span class='st'>"9"</span>, <span class='st'>"10"</span>, <span class='st'>"11"</span>, <span class='st'>"12"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># choose songs 7-12</span></span>
+<span>  </span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>act1_nrc_7_12</span>,</span>
+<span>       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>sentiment</span>, y <span class='op'>=</span> <span class='va'>n</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_col</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"#f6c049"</span>, color <span class='op'>=</span> <span class='st'>"#a8a7a7"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define column graph and change colors</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/coord_flip.html'>coord_flip</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># flip axes</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>facet_wrap</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>song_name</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># separate by song</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"NRC Sentiments in Songs 7-12 in Hamilton: Act 1"</span>, <span class='co'># add title</span></span>
+<span>       x <span class='op'>=</span> <span class='st'>"Word Count"</span>, <span class='co'># add x-axis label</span></span>
+<span>       y <span class='op'>=</span> <span class='st'>"Sentiment"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># add y-axis label</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>plot.title <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>hjust <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>, <span class='co'># center title</span></span>
+<span>        panel.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='st'>"#404040"</span><span class='op'>)</span>, <span class='co'># outline panel</span></span>
+<span>        plot.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"snow"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># color plot background</span></span></code></pre>
+</div>
+<p><img src="hamilton_files/figure-html5/unnamed-chunk-19-1.png" width="624" /></p>
+</div>
+<p><strong>Figure 14.</strong> NRC Sentiments in Songs 7-12 in Hamilton: Act 1. Of these 6 songs, <em>Satisfied</em> and <em>Right Hand Man</em> has the most amount of positive sentimental words. <em>The Story of Tonight (Reprise)</em> has few sentimental words.</p>
+<h5 id="songs-13-18-2">Songs 13-18</h5>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>act1_nrc_13_18</span> <span class='op'>&lt;-</span> <span class='va'>act1_nrc</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/count.html'>count</a></span><span class='op'>(</span><span class='va'>song</span>, <span class='va'>song_name</span>, <span class='va'>sentiment</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>song</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"13"</span>, <span class='st'>"14"</span>, <span class='st'>"15"</span>, <span class='st'>"16"</span>, <span class='st'>"17"</span>, <span class='st'>"18"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># choose songs 13-18</span></span>
+<span>  </span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>act1_nrc_13_18</span>, <span class='co'># specify data</span></span>
+<span>       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>sentiment</span>, y <span class='op'>=</span> <span class='va'>n</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define parameters</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_col</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"#f6c049"</span>, color <span class='op'>=</span> <span class='st'>"#a8a7a7"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define column graph and change colors</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/coord_flip.html'>coord_flip</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># flip axes</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>facet_wrap</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>song_name</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># separate by song</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"NRC Sentiments in Songs 13-18 in Hamilton: Act 1"</span>, <span class='co'># add title</span></span>
+<span>       x <span class='op'>=</span> <span class='st'>"Word Count"</span>, <span class='co'># add x-axis label</span></span>
+<span>       y <span class='op'>=</span> <span class='st'>"Sentiment"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># add y-axis label</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>plot.title <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>hjust <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>, <span class='co'># center title</span></span>
+<span>        panel.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='st'>"#404040"</span><span class='op'>)</span>, <span class='co'># outline panel</span></span>
+<span>        plot.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"snow"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># color plot background</span></span></code></pre>
+</div>
+<p><img src="hamilton_files/figure-html5/unnamed-chunk-20-1.png" width="624" /></p>
+</div>
+<p><strong>Figure 15.</strong> NRC Sentiments in Songs 13-18 in Hamilton: Act 1. Of these 6 songs, <em>Wait for It</em> has the most amount of negative sentimental words. The other 5 songs do not lean too heavily on any of the sentiments.</p>
+<h5 id="songs-19-23-2">Songs 19-23</h5>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>act1_nrc_19_23</span> <span class='op'>&lt;-</span> <span class='va'>act1_nrc</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/count.html'>count</a></span><span class='op'>(</span><span class='va'>song</span>, <span class='va'>song_name</span>, <span class='va'>sentiment</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>song</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"19"</span>, <span class='st'>"20"</span>, <span class='st'>"21"</span>, <span class='st'>"22"</span>, <span class='st'>"23"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># choose songs 19-23</span></span>
+<span>  </span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>act1_nrc_19_23</span>, <span class='co'># specify data</span></span>
+<span>       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>sentiment</span>, y <span class='op'>=</span> <span class='va'>n</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define parameters</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_col</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"#f6c049"</span>, color <span class='op'>=</span> <span class='st'>"#a8a7a7"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define column graph and change colors</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/coord_flip.html'>coord_flip</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># flip axes</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>facet_wrap</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>song_name</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># separate by song</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"NRC Sentimens in Songs 19-23 in Hamilton: Act 1"</span>, <span class='co'># add title</span></span>
+<span>       x <span class='op'>=</span> <span class='st'>"Word Count"</span>, <span class='co'># add x-axis label</span></span>
+<span>       y <span class='op'>=</span> <span class='st'>"Sentiment"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># add y-axis label</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>plot.title <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>hjust <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>, <span class='co'># center title</span></span>
+<span>        panel.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='st'>"#404040"</span><span class='op'>)</span>, <span class='co'># outline panel</span></span>
+<span>        plot.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"snow"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># color plot background</span></span></code></pre>
+</div>
+<p><img src="hamilton_files/figure-html5/unnamed-chunk-21-1.png" width="624" /></p>
+</div>
+<p><strong>Figure 16.</strong> NRC Sentiments in Songs 19-23 in Hamilton: Act 1. Of these 5 songs, <em>Non-Stop</em> has the most amount of words that fall in these sentiment categories. <em>History Has Its Eyes On You</em> and <em>What Comes Next?</em> is very neutral in word sentiment content.</p>
+<h4 class="tabset tabset-fade" id="act-2-2">Act 2</h4>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>act2_nrc</span> <span class='op'>&lt;-</span> <span class='va'>words_act2_clean</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate-joins.html'>inner_join</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/pkg/tidytext/man/get_sentiments.html'>get_sentiments</a></span><span class='op'>(</span><span class='st'>"nrc"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># find nrc sentiments</span></span></code></pre>
+</div>
+</div>
+<h5 id="songs-1-6-3">Songs 1-6</h5>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>act2_nrc_1_6</span> <span class='op'>&lt;-</span> <span class='va'>act2_nrc</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/count.html'>count</a></span><span class='op'>(</span><span class='va'>song</span>, <span class='va'>song_name</span>, <span class='va'>sentiment</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>song</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"1"</span>, <span class='st'>"2"</span>, <span class='st'>"3"</span>, <span class='st'>"4"</span>, <span class='st'>"5"</span>, <span class='st'>"6"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># choose songs 1-6</span></span>
+<span>  </span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>act2_nrc_1_6</span>, <span class='co'># specify data</span></span>
+<span>       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>sentiment</span>, y <span class='op'>=</span> <span class='va'>n</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define parameters</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_col</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"#f6c049"</span>, color <span class='op'>=</span> <span class='st'>"#a8a7a7"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define column graph and change colors</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/coord_flip.html'>coord_flip</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># flip axes</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>facet_wrap</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>song_name</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># separate by song</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"NRC Sentiments in Songs 1-6 in Hamilton: Act 2"</span>, <span class='co'># add title</span></span>
+<span>       x <span class='op'>=</span> <span class='st'>"Word Count"</span>, <span class='co'># add x-axis label</span></span>
+<span>       y <span class='op'>=</span> <span class='st'>"Sentiment"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># add y-axis label</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>plot.title <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>hjust <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>, <span class='co'># center title</span></span>
+<span>        panel.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='st'>"#404040"</span><span class='op'>)</span>, <span class='co'># outline panel</span></span>
+<span>        plot.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"snow"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># color plot background</span></span></code></pre>
+</div>
+<p><img src="hamilton_files/figure-html5/unnamed-chunk-23-1.png" width="624" /></p>
+</div>
+<p><strong>Figure 17.</strong> NRC Sentiments in Songs 1-6 in Hamilton: Act 2. Of these 6 songs, most have high sentiment word content. <em>Schuyler Defeated</em> appears to have a lack of words that fall in any of these sentiment categories.</p>
+<h5 id="songs-7-12-2">Songs 7-12</h5>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>act2_nrc_7_12</span> <span class='op'>&lt;-</span> <span class='va'>act2_nrc</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/count.html'>count</a></span><span class='op'>(</span><span class='va'>song</span>, <span class='va'>song_name</span>, <span class='va'>sentiment</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>song</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"7"</span>, <span class='st'>"8"</span>, <span class='st'>"9"</span>, <span class='st'>"10"</span>, <span class='st'>"11"</span>, <span class='st'>"12"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># choose songs 7-12</span></span>
+<span>  </span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>act2_nrc_7_12</span>,</span>
+<span>       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>sentiment</span>, y <span class='op'>=</span> <span class='va'>n</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_col</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"#f6c049"</span>, color <span class='op'>=</span> <span class='st'>"#a8a7a7"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define column graph and change colors</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/coord_flip.html'>coord_flip</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># flip axes</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>facet_wrap</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>song_name</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># separate by song</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"NRC Sentiments in Songs 7-12 in Hamilton: Act 2"</span>, <span class='co'># add title</span></span>
+<span>       x <span class='op'>=</span> <span class='st'>"Word Count"</span>, <span class='co'># add x-axis label</span></span>
+<span>       y <span class='op'>=</span> <span class='st'>"Sentiment"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># add y-axis label</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>plot.title <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>hjust <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>, <span class='co'># center title</span></span>
+<span>        panel.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='st'>"#404040"</span><span class='op'>)</span>, <span class='co'># outline panel</span></span>
+<span>        plot.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"snow"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># color plot background</span></span></code></pre>
+</div>
+<p><img src="hamilton_files/figure-html5/unnamed-chunk-24-1.png" width="624" /></p>
+</div>
+<p><strong>Figure 18.</strong> NRC Sentiments in Songs 7-12 in Hamilton: Act 2. Of these 6 songs, <em>One Last Time</em> has the most number of words in the good sentiments. The songs <em>I Know Him</em>, <em>Washington on Your Side</em>, and <em>The Adams Administration</em> appear to be neutral amongst all the entiment columns.</p>
+<h5 id="songs-13-18-3">Songs 13-18</h5>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>act2_nrc_13_18</span> <span class='op'>&lt;-</span> <span class='va'>act2_nrc</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/count.html'>count</a></span><span class='op'>(</span><span class='va'>song</span>, <span class='va'>song_name</span>, <span class='va'>sentiment</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>song</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"13"</span>, <span class='st'>"14"</span>, <span class='st'>"15"</span>, <span class='st'>"16"</span>, <span class='st'>"17"</span>, <span class='st'>"18"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># choose songs 13-18</span></span>
+<span>  </span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>act2_nrc_13_18</span>, <span class='co'># specify data</span></span>
+<span>       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>sentiment</span>, y <span class='op'>=</span> <span class='va'>n</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define parameters</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_col</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"#f6c049"</span>, color <span class='op'>=</span> <span class='st'>"#a8a7a7"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define column graph and change colors</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/coord_flip.html'>coord_flip</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># flip axes</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>facet_wrap</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>song_name</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># separate by song</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"NRC Sentiments in Songs 13-18 in Hamilton: Act 2"</span>, <span class='co'># add title</span></span>
+<span>       x <span class='op'>=</span> <span class='st'>"Word Count"</span>, <span class='co'># add x-axis label</span></span>
+<span>       y <span class='op'>=</span> <span class='st'>"Sentiment"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># add y-axis label</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>plot.title <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>hjust <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>, <span class='co'># center title</span></span>
+<span>        panel.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='st'>"#404040"</span><span class='op'>)</span>, <span class='co'># outline panel</span></span>
+<span>        plot.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"snow"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># color plot background</span></span></code></pre>
+</div>
+<p><img src="hamilton_files/figure-html5/unnamed-chunk-25-1.png" width="624" /></p>
+</div>
+<p><strong>Figure 19.</strong> NRC Sentiments in Songs 13-18 in Hamilton: Act 2. Of these 6 songs, <em>Hurricane</em> had the highest word count for the negative sentiment. The songs <em>Blow Us All Away</em>, <em>It’s Quiet Uptown</em>, and <em>The Reynolds Pamphlet</em> each appear to have large word counts in the positive sentiment, as well as high counts in other sentiments as well.</p>
+<h5 id="songs-19-23-3">Songs 19-23</h5>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>act2_nrc_19_23</span> <span class='op'>&lt;-</span> <span class='va'>act2_nrc</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/count.html'>count</a></span><span class='op'>(</span><span class='va'>song</span>, <span class='va'>song_name</span>, <span class='va'>sentiment</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>song</span> <span class='op'><a href='https://rdrr.io/r/base/match.html'>%in%</a></span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"19"</span>, <span class='st'>"20"</span>, <span class='st'>"21"</span>, <span class='st'>"22"</span>, <span class='st'>"23"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># choose songs 19-23</span></span>
+<span>  </span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>data <span class='op'>=</span> <span class='va'>act2_nrc_19_23</span>, <span class='co'># specify data</span></span>
+<span>       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>sentiment</span>, y <span class='op'>=</span> <span class='va'>n</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define parameters</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_col</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"#f6c049"</span>, color <span class='op'>=</span> <span class='st'>"#a8a7a7"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># define column graph and change colors</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/coord_flip.html'>coord_flip</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># flip axes</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/facet_wrap.html'>facet_wrap</a></span><span class='op'>(</span><span class='op'>~</span><span class='va'>song_name</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># separate by song</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"NRC Sentiments in Songs 19-23 in Hamilton: Act 2"</span>, <span class='co'># add title</span></span>
+<span>       x <span class='op'>=</span> <span class='st'>"Word Count"</span>, <span class='co'># add x-axis label</span></span>
+<span>       y <span class='op'>=</span> <span class='st'>"Sentiment"</span><span class='op'>)</span> <span class='op'>+</span> <span class='co'># add y-axis label</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>plot.title <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_text</a></span><span class='op'>(</span>hjust <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>, <span class='co'># center title</span></span>
+<span>        panel.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>color <span class='op'>=</span> <span class='st'>"#404040"</span><span class='op'>)</span>, <span class='co'># outline panel</span></span>
+<span>        plot.background <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/element.html'>element_rect</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='st'>"snow"</span><span class='op'>)</span><span class='op'>)</span> <span class='co'># color plot background</span></span></code></pre>
+</div>
+<p><img src="hamilton_files/figure-html5/unnamed-chunk-26-1.png" width="624" /></p>
+</div>
+<p><strong>Figure 20.</strong> NRC Sentiments in Songs 19-23 in Hamilton: Act 2. Of these 5 songs, 4 of the 5 have no specific sentiments that are easily noticed. <em>The Election of 1800</em> appears to have the largest word count in the positive sentiment category in comparison to the other 4 songs.</p>
+<h1 id="key-takeaways">Key Takeaways</h1>
+<p>While these analyses do a good job at determining opinions, emotions, and attitudes in the text, there are limitation to these methods. The largest one is the lack of context the computer program has when looking at each of these different songs word-by-word. Some of the songs presented were given very positive sentimental ratings based on word content, when in fact, the usage of the words contradicted this analysis. It is likely that this type of analysis would likely work better with interpreting more formal types of writing than something that is much harder to understand without context.</p>
+<h4 id="data-citation">Data Citation</h4>
+<p>Miranda, L. (2016). Hamilton: an American musical. In J. McCarter (Ed.), Hamilton: the revolution (pp. 23-26). Grand Central Publishing.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <!--radix_placeholder_article_footer-->
 <!--/radix_placeholder_article_footer-->
